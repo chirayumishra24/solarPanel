@@ -1,0 +1,787 @@
+/* ── Shell ── */
+
+.solar-shell {
+  position: relative;
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
+  background: #020610;
+}
+
+.solar-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* ── HUD Column (Inside ChapterLayout) ── */
+.hud-column {
+  position: sticky;
+  top: 1.5rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 340px;
+  flex-shrink: 0;
+  pointer-events: none; /* Children handle clicks */
+}
+
+.hud-column > * {
+  box-sizing: border-box; /* Guarantee panels identically size themselves */
+}
+
+/* ── Compact HUD – top-left ── */
+.solar-hud {
+  position: relative;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  display: grid;
+  gap: 0.5rem;
+  border-radius: 1.5rem;
+  border: 5px solid #111;
+  background: #ffffff;
+  box-shadow: 6px 6px 0 #111;
+  pointer-events: auto;
+  font-size: 0.82rem;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+  color: #111;
+}
+
+/* Header row */
+.solar-hud-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.solar-hud-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: #e53e3e;
+  border: 2px solid #111;
+  flex-shrink: 0;
+}
+
+.solar-hud-title {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Bangers', sans-serif;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #111;
+}
+
+.solar-hud-time {
+  margin-left: auto;
+  color: #111;
+  font-weight: 900;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+/* Stats row */
+.solar-hud-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.solar-hud-stat {
+  padding: 0.4rem 0.2rem;
+  border-radius: 0.75rem;
+  background: #facc15;
+  border: 3px solid #111;
+  text-align: center;
+  box-shadow: 4px 4px 0 #111;
+}
+
+.solar-hud-stat-label {
+  display: block;
+  font-weight: 900;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #111;
+  margin-bottom: 0.2rem;
+}
+
+.solar-hud-stat-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+/* Energy bar */
+.solar-hud-bar {
+  position: relative;
+  height: 0.5rem;
+  margin: 0.25rem 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 3px solid #111;
+}
+
+.solar-hud-bar-fill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  background: #ef4444;
+  border-right: 2px solid #111;
+  transition: width 0.4s ease;
+}
+
+/* Controls */
+.solar-hud-control {
+  padding: 0.6rem 0.75rem;
+  border-radius: 1rem;
+  background: #bfdbfe;
+  border: 3px solid #111;
+  box-shadow: 4px 4px 0 #111;
+}
+
+.solar-hud-control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+  font-weight: 900;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.solar-hud-control-header span:last-child {
+  color: #111;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+/* Slider */
+.solar-tilt-slider {
+  width: 100%;
+  height: 0.4rem;
+  margin: 0;
+  appearance: none;
+  border-radius: 999px;
+  background: #111;
+  outline: none;
+}
+
+.solar-tilt-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 3px solid #111;
+  border-radius: 999px;
+  background: #facc15;
+  box-shadow: 2px 2px 0 #111;
+  cursor: pointer;
+}
+
+.solar-tilt-slider::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border: 3px solid #111;
+  border-radius: 999px;
+  background: #facc15;
+  box-shadow: 2px 2px 0 #111;
+  cursor: pointer;
+}
+
+/* Speed buttons */
+.solar-hud-speed-row {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.solar-hud-speed-btn {
+  flex: 1;
+  padding: 0.4rem 0;
+  border: 3px solid #111;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #111;
+  font: inherit;
+  font-weight: 900;
+  font-size: 0.75rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #111;
+  transition: transform 0.1s;
+}
+
+.solar-hud-speed-btn:hover,
+.solar-hud-speed-btn:focus-visible {
+  background: #fde047;
+}
+
+.solar-hud-speed-btn.is-active {
+  background: #22c55e;
+  color: #fff;
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+
+/* Footer */
+.solar-hud-footer {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #111;
+  text-align: center;
+}
+
+/* ── Character Summary Card ── */
+.character-summary-card {
+  position: relative;
+  pointer-events: auto; /* Enable interaction */
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 1.2rem;
+  background: linear-gradient(135deg, rgba(10, 25, 47, 0.85), rgba(5, 12, 30, 0.9));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(77, 224, 255, 0.2);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.summary-avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(77, 224, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(77, 224, 255, 0.3);
+  box-shadow: 0 0 15px rgba(77, 224, 255, 0.2);
+}
+
+.summary-bubble {
+  flex: 1;
+}
+
+.summary-bubble p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+
+/* ── Fullscreen Button ── */
+.fullscreen-toggle-btn {
+  position: absolute;
+  top: clamp(0.75rem, 2vw, 1.5rem);
+  right: clamp(0.75rem, 2vw, 1.5rem);
+  z-index: 100;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 4px solid #111;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 #111;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fullscreen-toggle-btn:hover {
+  background: #facc15;
+  transform: scale(1.05);
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .solar-hud {
+    width: calc(100vw - 1.5rem);
+    padding: 0.75rem 0.85rem;
+    gap: 0.5rem;
+  }
+
+  .solar-hud-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Course Overlay UI ── */
+.chapter-overlay-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* Let clicks pass through to 3D scene where empty */
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Progress bar at top */
+.chapter-progress-bar-container {
+  height: 12px;
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 4px solid #111;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 20;
+}
+
+.chapter-progress-bar-fill {
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    #ef4444,
+    #ef4444 15px,
+    #facc15 15px,
+    #facc15 30px
+  );
+  border-right: 4px solid #111;
+  transition: width 0.1s ease-out;
+}
+
+/* Scrollable container */
+.chapter-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  pointer-events: auto; /* Enable scrolling */
+  
+  /* Flex layout to put HUD on left, content on right */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1.5rem 2%;
+  gap: 3rem;
+}
+
+/* Custom scrollbar for overlay */
+.chapter-scroll-area::-webkit-scrollbar {
+  width: 8px;
+}
+.chapter-scroll-area::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+.chapter-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(132, 171, 221, 0.3);
+  border-radius: 4px;
+}
+.chapter-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(132, 171, 221, 0.5);
+}
+
+.chapter-content-wrapper {
+  max-width: 800px;
+  flex: 1;
+  width: 100%;
+  margin-right: 0;
+  padding-bottom: 20vh;
+  box-sizing: border-box;
+}
+
+.content-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Comic Content Cards */
+.content-card {
+  background: #ffffff;
+  border: 6px solid #111;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  box-shadow: 10px 10px 0 #111;
+  color: #111;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+  line-height: 1.6;
+  font-size: 1.15rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+/* ── Dynamic Themes ── */
+
+/* Night / Deep Dusk */
+.theme-night .content-card,
+.theme-twilight .content-card {
+  background: #1e3a8a;
+  color: #ffffff;
+  border-color: #111;
+}
+
+/* Early Morning / Dawn */
+.theme-morning .content-card {
+  background: #fde68a;
+  color: #111;
+  border-color: #111;
+}
+
+/* Bright Daytime */
+.theme-day .content-card,
+.theme-afternoon .content-card {
+  background: #ffffff;
+  color: #111;
+  border-color: #111;
+  box-shadow: 12px 12px 0 #111;
+}
+.theme-day .content-card p, 
+.theme-afternoon .content-card p {
+  color: #111;
+}
+
+/* Golden Hour / Evening */
+.theme-evening .content-card {
+  background: #f97316;
+  color: #111;
+  border-color: #111;
+}
+
+.heading-card {
+  padding: 1.5rem 2rem;
+  background: #facc15;
+  border-left: none;
+}
+
+/* Remove background and add huge spacing for the main chapter title */
+.heading-card.level-1 {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 45vh; /* HUGE vertical space before the first actual content card */
+}
+
+.heading-card h1 { 
+  font-size: 3.5rem; 
+  color: #facc15; 
+  margin: 0; 
+  -webkit-text-stroke: 3px #111;
+  text-shadow: 6px 6px 0px #111;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Bangers', sans-serif;
+  text-transform: uppercase;
+}
+.heading-card h2 { font-size: 2.25rem; color: #111; margin: 0; font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Bangers', sans-serif; text-transform: uppercase; }
+.heading-card h3 { font-size: 1.75rem; color: #111; margin: 0; font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Bangers', sans-serif; text-transform: uppercase; }
+.heading-card h4 { font-size: 1.5rem; color: #111; margin: 0; font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Bangers', sans-serif; text-transform: uppercase; }
+
+/* In Day themes, heading titles */
+.theme-day .heading-card.level-1 h1, .theme-afternoon .heading-card.level-1 h1 { color: #ef4444; }
+.theme-evening .heading-card.level-1 h1 { color: #facc15; }
+
+/* Adjustments for white fonts in night mode headings */
+.theme-night .heading-card h2, .theme-twilight .heading-card h2 { color: #facc15; }
+.theme-night .heading-card h3, .theme-twilight .heading-card h3 { color: #fff; }
+.theme-night .heading-card h4, .theme-twilight .heading-card h4 { color: #fff; }
+
+.text-card p {
+  margin: 0;
+}
+
+.video-card {
+  padding: 1.5rem;
+}
+
+.video-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: inherit;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Bangers', sans-serif;
+  text-transform: uppercase;
+  padding-left: 0.5rem;
+}
+
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  border-radius: 1rem;
+  border: 4px solid #111;
+  overflow: hidden;
+  background: #000;
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.image-card {
+  padding: 1.5rem;
+}
+
+.image-card img {
+  width: 100%;
+  height: auto;
+  border: 4px solid #111;
+  border-radius: 1rem;
+  display: block;
+}
+
+.list-card ul, .list-card ol {
+  margin: 0;
+  padding-left: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.list-card li {
+  padding-left: 0.25rem;
+}
+.list-card li::marker {
+  color: #ef4444;
+  font-weight: 900;
+  font-size: 1.25em;
+}
+
+/* ── Table Block ── */
+.table-card {
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+.table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.table-wrapper th, .table-wrapper td {
+  padding: 1rem;
+  border: 3px solid #111;
+}
+.table-wrapper th {
+  font-weight: 900;
+  background: #facc15;
+  color: #111;
+  text-transform: uppercase;
+}
+
+/* Theme visibility overrides for tables */
+.theme-day .table-wrapper th, .theme-afternoon .table-wrapper th {
+  background: #facc15;
+  color: #111;
+}
+
+.theme-day .table-wrapper td, .theme-afternoon .table-wrapper td {
+  border-color: #111;
+  color: inherit;
+}
+
+/* ── Comic Panel (Ad-Man Style) for HUD ── */
+.comic-panel-card {
+  position: relative;
+  width: 100%;
+  margin-top: 4.5rem; /* Room for the overlapping badge */
+  background: #ffffff;
+  border: 6px solid #111;
+  border-radius: 1.5rem;
+  padding: 2.5rem 1.25rem 1.5rem;
+  box-shadow: 8px 8px 0 #111;
+  color: #111;
+  text-align: center;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+  pointer-events: auto; /* Since container is passthrough */
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* The downward tail marker */
+.comic-panel-card::after {
+  content: '';
+  position: absolute;
+  bottom: -22px;
+  right: 30px;
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 25px solid #111;
+  z-index: 1;
+  transform: rotate(-15deg);
+}
+
+/* White inner triangle to hollow out the tail */
+.comic-panel-card::before {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  right: 33px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 15px solid #ffffff;
+  z-index: 2;
+  transform: rotate(-15deg);
+}
+
+/* The hero image overlapping top */
+.comic-hero-badge {
+  position: absolute;
+  top: -65px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 90px;
+  background: repeating-conic-gradient(
+    #facc15 0 15deg,
+    #fb923c 15deg 30deg
+  );
+  border: 5px solid #111;
+  border-radius: 1rem;
+  box-shadow: 6px 6px 0 #111;
+  z-index: 3;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* Character Hero Image inside badge */
+.comic-hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+/* Title text: AD-MAN SAYS: */
+.comic-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #e53e3e;
+  -webkit-text-stroke: 1.5px #111;
+  text-shadow: 3px 3px 0 #111;
+  margin-bottom: 0.75rem;
+  margin-top: -0.5rem;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  font-family: inherit;
+}
+
+.comic-content {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1f2937;
+  text-align: left;
+}
+
+/* ── Responsive Overrides ── */
+@media (max-width: 1024px) {
+  .chapter-scroll-area {
+    padding: 1rem 2%;
+    gap: 1.5rem;
+  }
+  .hud-column {
+    width: 300px;
+    top: 1rem;
+  }
+  .chapter-content-wrapper {
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .chapter-scroll-area {
+    flex-direction: column; /* Stacks HUD on top of Chapter Content! */
+    align-items: stretch; /* Stretch full width */
+    padding: 1.5rem 1rem;
+    gap: 1rem;
+  }
+
+  .hud-column {
+    position: relative; /* Scrolls naturally with the text! */
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .chapter-content-wrapper {
+    margin-right: 0;
+    max-width: 100%;
+  }
+
+  .heading-card.level-1 {
+    margin-bottom: 15vh; /* Less huge space on mobile start */
+  }
+
+  .heading-card.level-1 h1 {
+    font-size: 2.25rem;
+    -webkit-text-stroke: 2px #111;
+  }
+
+  .comic-panel-card {
+    margin-top: 3.5rem;
+    padding: 2rem 1rem 1rem;
+  }
+}
+
+/* ── Responsive Overrides ── */
+@media (max-width: 1024px) {
+  .chapter-scroll-area {
+    padding: 1rem 2%;
+    gap: 1.5rem;
+  }
+  .hud-column {
+    width: 300px;
+    top: 1rem;
+  }
+  .chapter-content-wrapper {
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .chapter-scroll-area {
+    flex-direction: column; /* Stacks HUD on top of Chapter Content! */
+    align-items: stretch; /* Stretch full width */
+    padding: 1.5rem 1rem;
+    gap: 1rem;
+  }
+
+  .hud-column {
+    position: relative; /* Scrolls naturally with the text! */
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .chapter-content-wrapper {
+    margin-right: 0;
+    max-width: 100%;
+  }
+
+  .heading-card.level-1 {
+    margin-bottom: 15vh; /* Less huge space on mobile start */
+  }
+
+  .heading-card.level-1 h1 {
+    font-size: 2.25rem;
+    -webkit-text-stroke: 2px #111;
+  }
+
+  .comic-panel-card {
+    margin-top: 3.5rem;
+    padding: 2rem 1rem 1rem;
+  }
+}
+
+
