@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CustomVideoPlayer } from './CustomVideoPlayer';
 
 export function ContentBlocks({ blocks }) {
   if (!blocks || !Array.length) return null;
@@ -19,6 +21,10 @@ export function ContentBlocks({ blocks }) {
             return <ListBlock key={index} block={block} />;
           case 'table':
             return <TableBlock key={index} block={block} />;
+          case 'carousel':
+            return <CarouselBlock key={index} block={block} />;
+          case 'link':
+            return <LinkBlock key={index} block={block} />;
           default:
             return null;
         }
@@ -46,17 +52,9 @@ function TextBlock({ block }) {
 
 function VideoBlock({ block }) {
   return (
-    <div className="content-card video-card">
-      {block.title && <h4 className="video-title">{block.title}</h4>}
-      <div className="video-wrapper">
-        <iframe
-          src={block.url}
-          title={block.title || 'Video player'}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
-      </div>
+    <div className="content-card video-card" style={{ padding: 0, overflow: 'hidden' }}>
+      {block.title && <h4 className="video-title" style={{ padding: '10px 15px', margin: 0, background: 'rgba(0,0,0,0.5)', color: '#fff', position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>{block.title}</h4>}
+      <CustomVideoPlayer src={block.url} title={block.title} />
     </div>
   );
 }
@@ -100,6 +98,95 @@ function TableBlock({ block }) {
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+function LinkBlock({ block }) {
+  return (
+    <div className="content-card link-card" style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+      <a 
+        href={block.url} 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        style={{
+          display: 'inline-block',
+          padding: '12px 24px',
+          background: 'linear-gradient(135deg, #FFB800 0%, #FF8A00 100%)',
+          color: '#fff',
+          textDecoration: 'none',
+          borderRadius: '30px',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 15px rgba(255, 138, 0, 0.4)',
+          transition: 'transform 0.2s'
+        }}
+        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        {block.text || 'View Resource'}
+      </a>
+    </div>
+  );
+}
+
+function CarouselBlock({ block }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % block.images.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + block.images.length) % block.images.length);
+  };
+
+  if (!block.images || !block.images.length) return null;
+
+  return (
+    <div className="content-card carousel-card" style={{ position: 'relative', overflow: 'hidden', padding: 0 }}>
+      <button 
+        onClick={handlePrev} 
+        style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.6)', borderRadius: '50%', padding: '8px', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <ChevronLeft size={24} />
+      </button>
+      
+      <div style={{ padding: '0', margin: 0, display: 'flex', transition: 'transform 0.3s ease', transform: `translateX(-${currentIndex * 100}%)` }}>
+        {block.images.map((img, i) => (
+          <img 
+            key={i}
+            src={img.url} 
+            alt={img.alt || 'Carousel image'} 
+            style={{ width: '100%', flexShrink: 0, objectFit: 'contain', maxHeight: '500px', display: 'block', background: 'rgba(0,0,0,0.1)' }}
+          />
+        ))}
+      </div>
+      
+      <button 
+        onClick={handleNext} 
+        style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.6)', borderRadius: '50%', padding: '8px', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <ChevronRight size={24} />
+      </button>
+      
+      <div style={{ position: 'absolute', bottom: '15px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 10 }}>
+        {block.images.map((_, i) => (
+          <button 
+            key={i} 
+            onClick={() => setCurrentIndex(i)}
+            style={{ 
+              width: '10px', 
+              height: '10px', 
+              borderRadius: '50%', 
+              background: i === currentIndex ? 'white' : 'rgba(255,255,255,0.4)',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0
+            }} 
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
       </div>
     </div>
   );
