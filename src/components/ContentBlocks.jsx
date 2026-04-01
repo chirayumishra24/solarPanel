@@ -53,7 +53,6 @@ function TextBlock({ block }) {
 function VideoBlock({ block }) {
   return (
     <div className="content-card video-card" style={{ padding: 0, overflow: 'hidden' }}>
-      {block.title && <h4 className="video-title" style={{ padding: '10px 15px', margin: 0, background: 'rgba(0,0,0,0.5)', color: '#fff', position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>{block.title}</h4>}
       <CustomVideoPlayer src={block.url} title={block.title} />
     </div>
   );
