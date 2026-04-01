@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CustomVideoPlayer } from './CustomVideoPlayer';
+import { ActivityBlock } from './ActivityBlock';
 
 export function ContentBlocks({ blocks }) {
   if (!blocks || !Array.length) return null;
@@ -25,6 +26,8 @@ export function ContentBlocks({ blocks }) {
             return <CarouselBlock key={index} block={block} />;
           case 'link':
             return <LinkBlock key={index} block={block} />;
+          case 'activity':
+            return <ActivityBlock key={index} block={block} />;
           default:
             return null;
         }

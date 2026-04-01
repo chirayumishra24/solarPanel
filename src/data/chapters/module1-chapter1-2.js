@@ -80,6 +80,10 @@ export const module1Chapter1_2 = {
       type: 'image',
       url: 'https://login.skillizee.io/s/articles/69c35b040fdf31059d67efb9/images/image-20260325091823-2.png',
       alt: 'Solar Superhero Team'
+    },
+    {
+      type: 'activity',
+      activityId: 'solar-wiring'
     }
   ]
 };

@@ -201,6 +201,10 @@ export const module2Chapter1 = {
     {
       type: 'text',
       content: 'Portable & Disaster Relief: Ultra-thin, "rollable" solar mats that can be deployed in minutes to power field hospitals or emergency communication hubs.'
+    },
+    {
+      type: 'activity',
+      activityId: 'application-matcher'
     }
   ]
 };

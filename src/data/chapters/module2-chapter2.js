@@ -194,6 +194,10 @@ export const module2Chapter2 = {
     {
       type: 'text',
       content: 'Recent Market Entrants (2026): Startup Energy (Micromax), Best Apartment, and Army Solar Energy have recently entered the ALMM list, indicating that consumer electronics and real-estate firms are pivoting into solar manufacturing.'
+    },
+    {
+      type: 'activity',
+      activityId: 'manufacturer-lab'
     }
   ]
 };

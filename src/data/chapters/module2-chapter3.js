@@ -256,6 +256,10 @@ export const module2Chapter3 = {
         'Net-Meter: Apply for net-metering. After the DISCOM inspects and installs the meter, you receive a commissioning certificate.',
         'Claim: Upload your bank details and a cancelled cheque on the portal. The money is transferred via DBT.'
       ]
+    },
+    {
+      type: 'activity',
+      activityId: 'subsidy-calculator'
     }
   ]
 };

@@ -88,6 +88,10 @@ export const module1Chapter1_3 = {
         ['Polycrystalline', 'People want to save money.', 'Blue & Shimmery'],
         ['Thin-Film', 'Camping, RVs, and curved spots.', 'Thin & Flexible']
       ]
+    },
+    {
+      type: 'activity',
+      activityId: 'space-optimizer'
     }
   ]
 };

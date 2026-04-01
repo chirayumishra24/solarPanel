@@ -118,6 +118,10 @@ export const module1Chapter1 = {
         'Racking: The metal framework that holds the panels in place.',
         'Battery (Optional): To store extra energy for use at night or during cloudy days'
       ]
+    },
+    {
+      type: 'activity',
+      activityId: 'sun-tracker'
     }
   ]
 };
