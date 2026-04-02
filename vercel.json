@@ -5,6 +5,10 @@
       "destination": "/audio/$1"
     },
     {
+      "source": "/videos/(.*)",
+      "destination": "/videos/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
