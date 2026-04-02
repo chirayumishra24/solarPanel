@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/audio/(.*)",
+      "destination": "/audio/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
