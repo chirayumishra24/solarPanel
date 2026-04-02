@@ -50,7 +50,7 @@ export function ChapterLayout({ chapterData }) {
         <SolarHUD />
         
         <div className="chapter-content-wrapper">
-          <ContentBlocks blocks={chapterData.blocks} />
+          <ContentBlocks blocks={chapterData.blocks} chapterId={chapterData.id} />
         </div>
       </div>
     </div>
