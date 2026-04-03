@@ -1,19 +1,28 @@
-import React, { useState, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Sphere, Box, Cylinder, Torus, Float, MeshDistortMaterial } from '@react-three/drei';
+import React, { useState, useRef, useMemo } from 'react';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { OrbitControls, Sphere, Box, Cylinder, Torus, Float, Stars, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
-/* ─── 3D Scene: A spinning globe with location markers ─── */
-function Globe({ highlightType }) {
-  const globeRef = useRef();
-  const markersRef = useRef();
+/* ─── Realistic textured Earth globe ─── */
+function Earth({ highlightType }) {
+  const earthRef = useRef();
+  const cloudsRef = useRef();
+
+  const earthTexture = useTexture('/images/earth-texture.png');
+
+  // Improve texture quality
+  useMemo(() => {
+    earthTexture.minFilter = THREE.LinearFilter;
+    earthTexture.magFilter = THREE.LinearFilter;
+    earthTexture.colorSpace = THREE.SRGBColorSpace;
+  }, [earthTexture]);
 
   useFrame((_, delta) => {
-    if (globeRef.current) globeRef.current.rotation.y += delta * 0.15;
-    if (markersRef.current) markersRef.current.rotation.y += delta * 0.15;
+    if (earthRef.current) earthRef.current.rotation.y += delta * 0.08;
+    if (cloudsRef.current) cloudsRef.current.rotation.y += delta * 0.12;
   });
 
-  // Marker positions on sphere for each application type
+  // Marker positions
   const markers = [
     { type: 'residential', pos: [0, 1.8, 0.8], color: '#e67e22', label: '🏠' },
     { type: 'space', pos: [0, 3.2, 0], color: '#8e44ad', label: '🚀' },
@@ -26,19 +35,58 @@ function Globe({ highlightType }) {
 
   return (
     <group>
-      {/* Earth-like globe */}
-      <group ref={globeRef}>
-        <Sphere args={[2, 32, 32]}>
-          <MeshDistortMaterial color="#1a5276" roughness={0.8} metalness={0.1} distort={0.05} speed={2} />
-        </Sphere>
-        {/* Continents (simplified shapes) */}
-        <Sphere args={[2.02, 16, 16]} rotation={[0.3, 0.5, 0]}>
-          <meshStandardMaterial color="#27ae60" wireframe transparent opacity={0.4} />
+      {/* Stars in background */}
+      <Stars radius={50} depth={50} count={2000} factor={3} saturation={0} fade speed={1} />
+
+      {/* Sun light source */}
+      <pointLight position={[10, 5, 8]} intensity={2} color="#FFD700" distance={30} />
+      <pointLight position={[-5, -3, -5]} intensity={0.5} color="#4488ff" distance={20} />
+
+      {/* Earth with real texture */}
+      <group ref={earthRef}>
+        <Sphere args={[2, 64, 64]}>
+          <meshStandardMaterial
+            map={earthTexture}
+            roughness={0.65}
+            metalness={0.05}
+          />
         </Sphere>
       </group>
 
+      {/* Cloud layer */}
+      <group ref={cloudsRef}>
+        <Sphere args={[2.08, 32, 32]}>
+          <meshStandardMaterial 
+            color="#ffffff" 
+            transparent 
+            opacity={0.15}
+            roughness={1}
+          />
+        </Sphere>
+      </group>
+
+      {/* Atmosphere glow */}
+      <Sphere args={[2.15, 32, 32]}>
+        <meshBasicMaterial 
+          color="#4488ff" 
+          transparent 
+          opacity={0.08}
+          side={THREE.BackSide}
+        />
+      </Sphere>
+
+      {/* Outer atmosphere */}
+      <Sphere args={[2.4, 32, 32]}>
+        <meshBasicMaterial 
+          color="#66bbff" 
+          transparent 
+          opacity={0.04}
+          side={THREE.BackSide}
+        />
+      </Sphere>
+
       {/* Location Markers */}
-      <group ref={markersRef}>
+      <group>
         {markers.map((m) => (
           <group key={m.type} position={m.pos}>
             <Float speed={3} floatIntensity={0.3}>
@@ -46,31 +94,54 @@ function Globe({ highlightType }) {
                 <meshStandardMaterial
                   color={m.color}
                   emissive={m.color}
-                  emissiveIntensity={highlightType === m.type ? 1.5 : 0.3}
+                  emissiveIntensity={highlightType === m.type ? 2 : 0.5}
                 />
               </Sphere>
               {highlightType === m.type && (
-                <Torus args={[0.35, 0.03, 8, 32]} rotation={[Math.PI / 2, 0, 0]}>
-                  <meshBasicMaterial color={m.color} transparent opacity={0.6} />
-                </Torus>
+                <>
+                  <Torus args={[0.35, 0.03, 8, 32]} rotation={[Math.PI / 2, 0, 0]}>
+                    <meshBasicMaterial color={m.color} transparent opacity={0.7} />
+                  </Torus>
+                  <Torus args={[0.5, 0.02, 8, 32]} rotation={[Math.PI / 2, 0, 0]}>
+                    <meshBasicMaterial color={m.color} transparent opacity={0.3} />
+                  </Torus>
+                </>
               )}
             </Float>
           </group>
         ))}
       </group>
 
-      {/* Orbiting satellite for space */}
-      <Float speed={2} floatIntensity={0.5}>
+      {/* ISS / Satellite with solar panels */}
+      <Float speed={1.5} floatIntensity={0.3}>
         <group position={[0, 3.5, 0]}>
-          <Box args={[0.15, 0.08, 0.15]}>
-            <meshStandardMaterial color="#ccc" metalness={0.8} />
+          {/* Main body */}
+          <Box args={[0.2, 0.1, 0.2]}>
+            <meshStandardMaterial color="#ccc" metalness={0.9} roughness={0.1} />
           </Box>
-          <Box args={[0.6, 0.02, 0.2]} position={[0.35, 0, 0]}>
-            <meshStandardMaterial color="#1a3b5c" metalness={0.5} />
-          </Box>
-          <Box args={[0.6, 0.02, 0.2]} position={[-0.35, 0, 0]}>
-            <meshStandardMaterial color="#1a3b5c" metalness={0.5} />
-          </Box>
+          {/* Solar wing left */}
+          <group position={[-0.5, 0, 0]}>
+            <Box args={[0.7, 0.02, 0.25]}>
+              <meshStandardMaterial color="#1a3b5c" metalness={0.7} roughness={0.2} />
+            </Box>
+            {/* Grid lines on panel */}
+            <Box args={[0.7, 0.021, 0.01]} position={[0, 0, 0]}>
+              <meshBasicMaterial color="#0f1a2a" />
+            </Box>
+          </group>
+          {/* Solar wing right */}
+          <group position={[0.5, 0, 0]}>
+            <Box args={[0.7, 0.02, 0.25]}>
+              <meshStandardMaterial color="#1a3b5c" metalness={0.7} roughness={0.2} />
+            </Box>
+            <Box args={[0.7, 0.021, 0.01]} position={[0, 0, 0]}>
+              <meshBasicMaterial color="#0f1a2a" />
+            </Box>
+          </group>
+          {/* Antenna */}
+          <Cylinder args={[0.005, 0.005, 0.15, 4]} position={[0.08, 0.1, 0]}>
+            <meshStandardMaterial color="#ddd" metalness={0.8} />
+          </Cylinder>
         </group>
       </Float>
     </group>
@@ -124,19 +195,17 @@ export default function SolarApplicationMatcher() {
   const allDone = Object.keys(answers).length === SCENARIOS.length;
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', backgroundColor: '#0d1117', color: 'white', fontFamily: 'sans-serif' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', backgroundColor: '#0a0a1a', color: 'white', fontFamily: 'sans-serif' }}>
       
-      {/* 3D Globe */}
+      {/* 3D Earth Scene */}
       <div style={{ width: '320px', flexShrink: 0, position: 'relative' }}>
         <Canvas camera={{ position: [0, 2, 6], fov: 40 }}>
-          <ambientLight intensity={0.3} />
-          <directionalLight position={[5, 5, 5]} intensity={0.8} />
-          <pointLight position={[-3, 2, 4]} intensity={0.5} color="#FFB800" />
-          <Globe highlightType={current.correct} />
-          <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
+          <ambientLight intensity={0.15} />
+          <Earth highlightType={current.correct} />
+          <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.3} />
         </Canvas>
         <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#484f58', textAlign: 'center', pointerEvents: 'none' }}>
-          Drag to rotate the globe
+          🌍 Drag to rotate the globe
         </div>
       </div>
 

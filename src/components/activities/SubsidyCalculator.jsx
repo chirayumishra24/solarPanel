@@ -1,9 +1,56 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Box, Cylinder, Sphere, Float } from '@react-three/drei';
+import { OrbitControls, Box, Cylinder, Sphere, Float, Plane, Cone } from '@react-three/drei';
 import * as THREE from 'three';
 
-/* ─── 3D House with dynamic solar panels based on capacity ─── */
+/* ─── 3D Tree ─── */
+function Tree({ position = [0, 0, 0], scale = 1 }) {
+  return (
+    <group position={position} scale={scale}>
+      <Cylinder args={[0.08, 0.12, 0.8, 6]} position={[0, 0.4, 0]} castShadow>
+        <meshStandardMaterial color="#5D4037" roughness={0.9} />
+      </Cylinder>
+      <Cone args={[0.5, 1, 8]} position={[0, 1.2, 0]} castShadow>
+        <meshStandardMaterial color="#2E7D32" roughness={0.8} />
+      </Cone>
+      <Cone args={[0.4, 0.8, 8]} position={[0, 1.7, 0]} castShadow>
+        <meshStandardMaterial color="#388E3C" roughness={0.8} />
+      </Cone>
+    </group>
+  );
+}
+
+/* ─── Neighbor House ─── */
+function NeighborHouse({ position = [0, 0, 0], color = '#e0d8cc', roofColor = '#795548' }) {
+  return (
+    <group position={position}>
+      <Box args={[2.5, 1.8, 2.5]} position={[0, 0.9, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color={color} />
+      </Box>
+      <Box args={[0.5, 1, 0.05]} position={[0, 0.5, 1.26]} receiveShadow>
+        <meshStandardMaterial color="#5D4037" />
+      </Box>
+      <Box args={[0.35, 0.35, 0.05]} position={[-0.7, 1.2, 1.26]}>
+        <meshStandardMaterial color="#81D4FA" metalness={0.3} />
+      </Box>
+      {/* Gabled roof using two angled planes */}
+      <group position={[0, 1.8, 0]}>
+        <Box args={[2.7, 0.12, 2.7]} position={[0, 0, 0]} castShadow>
+          <meshStandardMaterial color={roofColor} />
+        </Box>
+        <Box args={[2.9, 0.12, 1.5]} position={[0, 0.35, 0]} rotation={[0, 0, 0]} castShadow>
+          <meshStandardMaterial color={roofColor} />
+        </Box>
+        <mesh position={[0, 0.65, 0]} castShadow>
+          <coneGeometry args={[1.8, 0.7, 4]} />
+          <meshStandardMaterial color={roofColor} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+/* ─── 3D Colony House with dynamic solar panels ─── */
 function SolarHouse({ capacity, isSuccess }) {
   const panelsRef = useRef();
   const sunRef = useRef();
@@ -12,7 +59,7 @@ function SolarHouse({ capacity, isSuccess }) {
     if (sunRef.current) {
       const t = state.clock.elapsedTime * 0.3;
       sunRef.current.position.x = Math.cos(t) * 8;
-      sunRef.current.position.y = Math.sin(t) * 4 + 5;
+      sunRef.current.position.y = Math.sin(t) * 4 + 6;
     }
     if (panelsRef.current && isSuccess) {
       panelsRef.current.children.forEach((child, i) => {
@@ -21,7 +68,6 @@ function SolarHouse({ capacity, isSuccess }) {
     }
   });
 
-  // Generate panel positions based on capacity
   const panels = useMemo(() => {
     const arr = [];
     const maxPanels = Math.min(capacity, 10);
@@ -41,19 +87,25 @@ function SolarHouse({ capacity, isSuccess }) {
 
   return (
     <group>
+      {/* Sky */}
+      <color attach="background" args={['#87CEEB']} />
+      
       {/* Sun */}
-      <group ref={sunRef} position={[5, 6, 2]}>
+      <group ref={sunRef} position={[5, 7, 2]}>
         <Sphere args={[0.6, 16, 16]}>
           <meshBasicMaterial color="#FFD700" />
         </Sphere>
-        <pointLight intensity={1.5} color="#FFD700" distance={20} />
+        <pointLight intensity={1.5} color="#FFD700" distance={25} />
       </group>
 
-      {/* House */}
-      <group position={[0, -1.5, 0]}>
+      {/* Bright sky hemisphere light */}
+      <hemisphereLight skyColor="#87CEEB" groundColor="#4a7c59" intensity={0.6} />
+
+      {/* Main House */}
+      <group position={[0, 0, 0]}>
         {/* Walls */}
         <Box args={[4, 2.5, 3.5]} position={[0, 1.25, 0]} castShadow receiveShadow>
-          <meshStandardMaterial color="#e8e4de" />
+          <meshStandardMaterial color="#FAFAFA" />
         </Box>
         {/* Door */}
         <Box args={[0.7, 1.4, 0.05]} position={[0, 0.7, 1.76]} receiveShadow>
@@ -61,20 +113,38 @@ function SolarHouse({ capacity, isSuccess }) {
         </Box>
         {/* Windows */}
         <Box args={[0.5, 0.5, 0.05]} position={[-1.2, 1.5, 1.76]}>
-          <meshStandardMaterial color="#87CEEB" metalness={0.3} />
+          <meshStandardMaterial color="#81D4FA" metalness={0.3} />
         </Box>
         <Box args={[0.5, 0.5, 0.05]} position={[1.2, 1.5, 1.76]}>
-          <meshStandardMaterial color="#87CEEB" metalness={0.3} />
+          <meshStandardMaterial color="#81D4FA" metalness={0.3} />
         </Box>
 
-        {/* Roof */}
-        <mesh position={[0, 3.2, 0]} castShadow receiveShadow>
-          <coneGeometry args={[3.5, 1.8, 4]} />
-          <meshStandardMaterial color="#8b3a3a" />
-        </mesh>
+        {/* Proper gabled roof */}
+        <group position={[0, 2.5, 0]}>
+          {/* Base overhang */}
+          <Box args={[4.5, 0.12, 4]} position={[0, 0, 0]} castShadow receiveShadow>
+            <meshStandardMaterial color="#B71C1C" />
+          </Box>
+          {/* Middle tier */}
+          <Box args={[3.8, 0.12, 3.2]} position={[0, 0.4, 0]} castShadow>
+            <meshStandardMaterial color="#C62828" />
+          </Box>
+          {/* Ridge / peak */}
+          <Box args={[3, 0.12, 2.4]} position={[0, 0.75, 0]} castShadow>
+            <meshStandardMaterial color="#D32F2F" />
+          </Box>
+          {/* Top cap */}
+          <Box args={[2, 0.12, 1.4]} position={[0, 1.05, 0]} castShadow>
+            <meshStandardMaterial color="#E53935" />
+          </Box>
+          {/* Ridge line */}
+          <Box args={[0.8, 0.1, 0.6]} position={[0, 1.3, 0]} castShadow>
+            <meshStandardMaterial color="#EF5350" />
+          </Box>
+        </group>
 
         {/* Solar Panels on roof */}
-        <group ref={panelsRef} position={[0, 3.5, 0.8]} rotation={[0.5, 0, 0]}>
+        <group ref={panelsRef} position={[0, 3.2, 0.6]} rotation={[0.35, 0, 0]}>
           {panels.map((p, i) => (
             <group key={i} position={[p.x, p.baseY, p.z]} userData={{ baseY: p.baseY }}>
               <Box args={[0.8, 0.06, 0.55]} castShadow>
@@ -86,7 +156,6 @@ function SolarHouse({ capacity, isSuccess }) {
                   emissiveIntensity={isSuccess ? 0.3 : 0}
                 />
               </Box>
-              {/* Panel grid lines */}
               <Box args={[0.8, 0.061, 0.01]} position={[0, 0.001, 0]}>
                 <meshBasicMaterial color="#0a1929" />
               </Box>
@@ -96,26 +165,73 @@ function SolarHouse({ capacity, isSuccess }) {
             </group>
           ))}
         </group>
-
-        {/* Ground */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-          <planeGeometry args={[20, 20]} />
-          <meshStandardMaterial color="#2d5a27" />
-        </mesh>
-
-        {/* Money pile when success */}
-        {isSuccess && (
-          <Float speed={3} floatIntensity={0.3}>
-            <group position={[3, 1, 2]}>
-              {[0, 0.15, 0.3].map((y, i) => (
-                <Cylinder key={i} args={[0.25, 0.25, 0.12, 16]} position={[0, y, 0]}>
-                  <meshStandardMaterial color="#4CAF50" metalness={0.6} />
-                </Cylinder>
-              ))}
-            </group>
-          </Float>
-        )}
       </group>
+
+      {/* ═══ COLONY ENVIRONMENT ═══ */}
+
+      {/* Ground - bright green grass */}
+      <Plane args={[60, 60]} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <meshStandardMaterial color="#4CAF50" roughness={0.9} />
+      </Plane>
+
+      {/* Road in front of house */}
+      <Box args={[40, 0.03, 3]} position={[0, 0, 4.5]} receiveShadow>
+        <meshStandardMaterial color="#607D8B" roughness={0.8} />
+      </Box>
+      {/* Road center line */}
+      <Box args={[40, 0.04, 0.15]} position={[0, 0.01, 4.5]}>
+        <meshStandardMaterial color="#FFD54F" />
+      </Box>
+      {/* Sidewalk */}
+      <Box args={[40, 0.02, 1]} position={[0, 0, 2.8]} receiveShadow>
+        <meshStandardMaterial color="#BDBDBD" roughness={0.7} />
+      </Box>
+
+      {/* Neighbor Houses */}
+      <NeighborHouse position={[-6, 0, 0]} color="#FFF3E0" roofColor="#795548" />
+      <NeighborHouse position={[6, 0, 0]} color="#E3F2FD" roofColor="#455A64" />
+      <NeighborHouse position={[-6, 0, 8]} color="#F3E5F5" roofColor="#6D4C41" />
+      <NeighborHouse position={[0, 0, 9]} color="#E8F5E9" roofColor="#5D4037" />
+      <NeighborHouse position={[6, 0, 8]} color="#FFF8E1" roofColor="#607D8B" />
+
+      {/* Trees */}
+      <Tree position={[-3.5, 0, 2]} scale={1.2} />
+      <Tree position={[3.5, 0, 2]} scale={1} />
+      <Tree position={[-8, 0, 3]} scale={0.9} />
+      <Tree position={[8, 0, 3]} scale={1.1} />
+      <Tree position={[-5, 0, 7]} scale={0.8} />
+      <Tree position={[5, 0, 7]} scale={1} />
+      <Tree position={[0, 0, -3]} scale={1.3} />
+      <Tree position={[-9, 0, -2]} scale={1} />
+      <Tree position={[9, 0, -2]} scale={0.9} />
+
+      {/* Garden fence around main house */}
+      {[-2.5, -1.5, -0.5, 0.5, 1.5, 2.5].map((x, i) => (
+        <group key={`fence-${i}`} position={[x, 0, 2.3]}>
+          <Cylinder args={[0.03, 0.03, 0.6, 4]} position={[0, 0.3, 0]} castShadow>
+            <meshStandardMaterial color="#8D6E63" />
+          </Cylinder>
+        </group>
+      ))}
+      <Box args={[5.5, 0.05, 0.05]} position={[0, 0.5, 2.3]}>
+        <meshStandardMaterial color="#8D6E63" />
+      </Box>
+      <Box args={[5.5, 0.05, 0.05]} position={[0, 0.25, 2.3]}>
+        <meshStandardMaterial color="#8D6E63" />
+      </Box>
+
+      {/* Money pile when success */}
+      {isSuccess && (
+        <Float speed={3} floatIntensity={0.3}>
+          <group position={[3, 1, 2]}>
+            {[0, 0.15, 0.3].map((y, i) => (
+              <Cylinder key={i} args={[0.25, 0.25, 0.12, 16]} position={[0, y, 0]}>
+                <meshStandardMaterial color="#4CAF50" metalness={0.6} />
+              </Cylinder>
+            ))}
+          </group>
+        </Float>
+      )}
     </group>
   );
 }
@@ -185,11 +301,11 @@ export default function SubsidyCalculator() {
 
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
         
-        {/* 3D House */}
+        {/* 3D Colony House */}
         <div style={{ width: '340px', flexShrink: 0, position: 'relative' }}>
           <Canvas camera={{ position: [5, 4, 8], fov: 40 }} shadows>
-            <ambientLight intensity={0.3} />
-            <directionalLight position={[5, 8, 5]} intensity={0.6} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} />
+            <ambientLight intensity={0.4} />
+            <directionalLight position={[5, 8, 5]} intensity={0.8} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} />
             <SolarHouse capacity={capacity} isSuccess={isSuccess} />
             <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 2.2} minPolarAngle={Math.PI / 5} />
           </Canvas>

@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Box, Cylinder, Float, RoundedBox } from '@react-three/drei';
+import { OrbitControls, Box, Cylinder, Float, RoundedBox, Sphere, Plane } from '@react-three/drei';
 import * as THREE from 'three';
 
-/* ─── 3D Factory Scene ─── */
+/* ─── Enhanced 3D Factory Scene ─── */
 function FactoryBuilding({ color, scale = 1, position = [0, 0, 0], selected }) {
   const groupRef = useRef();
   useFrame((_, delta) => {
@@ -20,7 +20,7 @@ function FactoryBuilding({ color, scale = 1, position = [0, 0, 0], selected }) {
       </RoundedBox>
       {/* Roof */}
       <Box args={[2.2, 0.15, 1.7]} position={[0, 1.55, 0]} castShadow>
-        <meshStandardMaterial color="#333" metalness={0.5} />
+        <meshStandardMaterial color="#444" metalness={0.5} />
       </Box>
       {/* Solar panels on roof */}
       <group position={[0, 1.7, 0]} rotation={[-0.3, 0, 0]}>
@@ -33,11 +33,22 @@ function FactoryBuilding({ color, scale = 1, position = [0, 0, 0], selected }) {
       </group>
       {/* Chimney */}
       <Cylinder args={[0.12, 0.15, 0.6, 8]} position={[0.7, 1.85, -0.4]} castShadow>
-        <meshStandardMaterial color="#555" />
+        <meshStandardMaterial color="#666" />
       </Cylinder>
+      {/* Windows */}
+      <Box args={[0.3, 0.3, 0.05]} position={[-0.5, 0.9, 0.78]}>
+        <meshStandardMaterial color="#87CEEB" metalness={0.5} roughness={0.2} emissive={selected ? '#87CEEB' : '#000'} emissiveIntensity={selected ? 0.3 : 0} />
+      </Box>
+      <Box args={[0.3, 0.3, 0.05]} position={[0.5, 0.9, 0.78]}>
+        <meshStandardMaterial color="#87CEEB" metalness={0.5} roughness={0.2} emissive={selected ? '#87CEEB' : '#000'} emissiveIntensity={selected ? 0.3 : 0} />
+      </Box>
       {/* Door */}
       <Box args={[0.4, 0.6, 0.05]} position={[0, 0.3, 0.78]}>
         <meshStandardMaterial color="#8b5a2b" />
+      </Box>
+      {/* Company sign */}
+      <Box args={[1.2, 0.25, 0.05]} position={[0, 1.3, 0.78]}>
+        <meshStandardMaterial color={color} metalness={0.6} emissive={color} emissiveIntensity={selected ? 0.5 : 0.1} />
       </Box>
       {/* Glow ring when selected */}
       {selected && (
@@ -62,15 +73,23 @@ function FactoryScene({ selectedMfg }) {
 
   return (
     <>
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[8, 10, 5]} intensity={1} castShadow />
-      <pointLight position={[-5, 5, -5]} intensity={0.3} color="#FFB800" />
+      <ambientLight intensity={0.35} />
+      <directionalLight position={[8, 10, 5]} intensity={1.2} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} />
+      <pointLight position={[-5, 5, -5]} intensity={0.4} color="#FFB800" />
+      <hemisphereLight groundColor="#1a1a2e" skyColor="#334155" intensity={0.3} />
       
-      {/* Ground */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[20, 20]} />
-        <meshStandardMaterial color="#1a1a2e" />
-      </mesh>
+      {/* Ground with better material */}
+      <Plane args={[30, 30]} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <meshStandardMaterial color="#1e293b" roughness={0.8} />
+      </Plane>
+
+      {/* Road/paths between factories */}
+      <Box args={[12, 0.02, 0.6]} position={[0, 0, 0]} receiveShadow>
+        <meshStandardMaterial color="#374151" roughness={0.9} />
+      </Box>
+      <Box args={[0.6, 0.02, 8]} position={[0, 0, 0]} receiveShadow>
+        <meshStandardMaterial color="#374151" roughness={0.9} />
+      </Box>
 
       {FACTORY_POSITIONS.map(f => (
         <Float key={f.id} speed={selectedMfg === f.id ? 3 : 0} floatIntensity={selectedMfg === f.id ? 0.15 : 0}>
@@ -125,6 +144,8 @@ export default function ManufacturerLab() {
     setChallengeAnswers(prev => ({ ...prev, [currentChallenge.id]: mfgId }));
   };
 
+  const selectedMfg = MANUFACTURERS.find(m => m.id === selectedCard);
+
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', color: 'white', fontFamily: 'sans-serif' }}>
       
@@ -145,6 +166,26 @@ export default function ManufacturerLab() {
           <Canvas camera={{ position: [0, 6, 8], fov: 45 }} shadows>
             <FactoryScene selectedMfg={mode === 'explore' ? selectedCard : (challengeAnswers[currentChallenge?.id] || null)} />
           </Canvas>
+          
+          {/* Selected manufacturer info overlay */}
+          {mode === 'explore' && selectedMfg && (
+            <div style={{
+              position: 'absolute', top: '10px', left: '10px', right: '10px',
+              background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+              padding: '10px 14px', borderRadius: '10px',
+              border: `1px solid ${selectedMfg.color}40`,
+              pointerEvents: 'none'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>{selectedMfg.logo}</span>
+                <span style={{ fontWeight: 'bold', fontSize: '13px', color: selectedMfg.color }}>{selectedMfg.name}</span>
+              </div>
+              <div style={{ fontSize: '10px', color: '#8b949e', marginTop: '4px' }}>
+                {selectedMfg.capacity} capacity • {selectedMfg.tech}
+              </div>
+            </div>
+          )}
+
           <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#484f58', pointerEvents: 'none' }}>
             Selected factory glows & floats
           </div>
@@ -171,6 +212,12 @@ export default function ManufacturerLab() {
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#8b949e' }}>Capacity</span><span style={{ color: '#58a6ff', fontWeight: 'bold' }}>{mfg.capacity}</span></div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#8b949e' }}>Tech</span><span>{mfg.tech}</span></div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#8b949e' }}>Integration</span><span style={{ fontSize: '10px' }}>{mfg.integration}</span></div>
+                      {/* Capacity bar */}
+                      <div style={{ marginTop: '4px' }}>
+                        <div style={{ height: '4px', background: '#30363d', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${(mfg.capacityNum / 15) * 100}%`, background: mfg.color, borderRadius: '2px', transition: 'width 0.3s' }} />
+                        </div>
+                      </div>
                     </div>
                     {selectedCard === mfg.id && (
                       <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(0,0,0,0.3)', borderRadius: '6px', fontSize: '11px', color: '#c9d1d9', lineHeight: '1.3' }}>💡 {mfg.fact}</div>

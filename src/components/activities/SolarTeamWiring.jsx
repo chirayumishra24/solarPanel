@@ -1,16 +1,15 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 const COMPONENTS = [
-  { id: 'panel', name: 'Solar Panel', role: 'The Catcher', color: '#1a3b5c', icon: '☀️', hint: 'Catches sunlight' },
-  { id: 'controller', name: 'Charge Controller', role: 'The Guard', color: '#8E44AD', icon: '🚦', hint: 'Protects the battery' },
-  { id: 'battery', name: 'Battery', role: 'The Lunchbox', color: '#27AE60', icon: '🔋', hint: 'Stores extra energy' },
-  { id: 'inverter', name: 'Inverter', role: 'The Translator', color: '#D35400', icon: '🔄', hint: 'DC → AC conversion' },
-  { id: 'tv', name: 'Television', role: 'The Goal', color: '#2C3E50', icon: '📺', hint: 'Uses AC power' }
+  { id: 'panel', name: 'Solar Panel', role: 'The Catcher', color: '#1a3b5c', img: '/images/comp-solar-panel.png', hint: 'Catches sunlight' },
+  { id: 'controller', name: 'Charge Controller', role: 'The Guard', color: '#8E44AD', img: '/images/comp-controller.png', hint: 'Protects the battery' },
+  { id: 'battery', name: 'Battery', role: 'The Lunchbox', color: '#27AE60', img: '/images/comp-battery.png', hint: 'Stores extra energy' },
+  { id: 'inverter', name: 'Inverter', role: 'The Translator', color: '#D35400', img: '/images/comp-inverter.png', hint: 'DC → AC conversion' },
+  { id: 'tv', name: 'Television', role: 'The Goal', color: '#2C3E50', img: '/images/comp-tv.png', hint: 'Uses AC power' }
 ];
 
 const CORRECT_ORDER = ['panel', 'controller', 'battery', 'inverter', 'tv'];
 
-// Known wrong combos and their error messages
 const ERROR_MESSAGES = {
   'panel-tv': '💥 Zap! The TV only speaks AC, but the panel sends DC. You need an Inverter to translate!',
   'panel-inverter': '⚠️ The inverter works, but without a battery, you lose power at night! Add a Charge Controller & Battery first.',
@@ -47,7 +46,6 @@ export default function SolarTeamWiring() {
   }, []);
 
   useEffect(() => {
-    // Use a small delay + ResizeObserver to ensure positions are accurate
     const timer = setTimeout(updateNodePositions, 300);
     
     if (containerRef.current) {
@@ -63,7 +61,6 @@ export default function SolarTeamWiring() {
     };
   }, [updateNodePositions]);
 
-  // Also update positions whenever connections change (layout might shift)
   useEffect(() => {
     const timer = setTimeout(updateNodePositions, 50);
     return () => clearTimeout(timer);
@@ -87,7 +84,6 @@ export default function SolarTeamWiring() {
       return;
     }
 
-    // Check for duplicate connection
     const exists = connections.some(
       c => (c.from === activeNode && c.to === id) || (c.from === id && c.to === activeNode)
     );
@@ -96,13 +92,11 @@ export default function SolarTeamWiring() {
       return;
     }
 
-    // Add connection
     const newConn = { from: activeNode, to: id };
     const newConnections = [...connections, newConn];
     setConnections(newConnections);
     setActiveNode(null);
 
-    // Check for known error combos
     const errKey = getErrorKey(activeNode, id);
     if (ERROR_MESSAGES[errKey]) {
       setErrorMsg(ERROR_MESSAGES[errKey]);
@@ -116,11 +110,9 @@ export default function SolarTeamWiring() {
     setSuccessAnim(false);
   };
 
-  // Win condition: check if connections form the exact correct path
   const checkWin = () => {
     if (connections.length < CORRECT_ORDER.length - 1) return false;
     
-    // Build adjacency from connections
     const adj = {};
     connections.forEach(c => {
       if (!adj[c.from]) adj[c.from] = [];
@@ -129,7 +121,6 @@ export default function SolarTeamWiring() {
       adj[c.to].push(c.from);
     });
 
-    // Walk the correct path
     for (let i = 0; i < CORRECT_ORDER.length - 1; i++) {
       const from = CORRECT_ORDER[i];
       const to = CORRECT_ORDER[i + 1];
@@ -140,7 +131,6 @@ export default function SolarTeamWiring() {
 
   const isSuccess = checkWin();
 
-  // Trigger success animation
   useEffect(() => {
     if (isSuccess && !successAnim) {
       setSuccessAnim(true);
@@ -148,7 +138,6 @@ export default function SolarTeamWiring() {
     }
   }, [isSuccess, successAnim]);
 
-  // Figure out which nodes are "correctly connected so far"
   const getConnectedCorrectly = () => {
     const correct = new Set(['panel']);
     for (let i = 0; i < CORRECT_ORDER.length - 1; i++) {
@@ -216,7 +205,6 @@ export default function SolarTeamWiring() {
             const p2 = nodesPos[conn.to];
             if (!p1 || !p2) return null;
 
-            // Check if this connection is part of the correct path
             const isCorrectConn = (() => {
               for (let j = 0; j < CORRECT_ORDER.length - 1; j++) {
                 const a = CORRECT_ORDER[j], b = CORRECT_ORDER[j + 1];
@@ -229,11 +217,8 @@ export default function SolarTeamWiring() {
 
             return (
               <g key={i}>
-                {/* Glow layer */}
                 <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth="10" strokeLinecap="round" opacity="0.2" filter="url(#glow)" />
-                {/* Main wire */}
                 <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth="4" strokeLinecap="round" className={isSuccess ? 'wire-success' : 'wire-flowing'} />
-                {/* Energy dots */}
                 <circle r="6" fill={color} opacity="0.9">
                   <animateMotion dur="1.5s" repeatCount="indefinite" path={`M${p1.x},${p1.y} L${p2.x},${p2.y}`} />
                 </circle>
@@ -242,7 +227,7 @@ export default function SolarTeamWiring() {
           })}
         </svg>
 
-        {/* Component Nodes */}
+        {/* Component Nodes with Realistic Images */}
         <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', height: '100%', gap: '12px', flexWrap: 'wrap' }}>
           {COMPONENTS.map((comp, idx) => {
             const isActive = activeNode === comp.id;
@@ -255,8 +240,8 @@ export default function SolarTeamWiring() {
                 data-node-id={comp.id}
                 onClick={() => handleNodeClick(comp.id)}
                 style={{
-                  width: '110px',
-                  minHeight: '140px',
+                  width: '120px',
+                  minHeight: '160px',
                   backgroundColor: isActive ? '#30363d' : `${comp.color}22`,
                   borderRadius: '16px',
                   display: 'flex', flexDirection: 'column',
@@ -290,7 +275,20 @@ export default function SolarTeamWiring() {
                   {idx + 1}
                 </div>
 
-                <div style={{ fontSize: '36px', marginBottom: '8px' }}>{comp.icon}</div>
+                {/* Realistic Image */}
+                <div style={{ 
+                  width: '64px', height: '64px', marginBottom: '8px',
+                  borderRadius: '10px', overflow: 'hidden',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <img src={comp.img} alt={comp.name} style={{
+                    width: '100%', height: '100%', objectFit: 'cover',
+                    filter: isTVOn ? 'brightness(1.3) saturate(1.2)' : 'none',
+                    transition: 'filter 0.3s'
+                  }} />
+                </div>
                 <div style={{ textAlign: 'center', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>{comp.name}</div>
                 <div style={{ textAlign: 'center', fontSize: '10px', color: '#8b949e', fontStyle: 'italic' }}>{comp.role}</div>
                 

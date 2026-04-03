@@ -7,6 +7,15 @@ const SolarApplicationMatcher = lazy(() => import('./activities/SolarApplication
 const ManufacturerLab = lazy(() => import('./activities/ManufacturerLab'));
 const SubsidyCalculator = lazy(() => import('./activities/SubsidyCalculator'));
 
+const ACTIVITY_TITLES = {
+  'sun-tracker': 'Sun Tracker Sandbox',
+  'solar-wiring': 'Build the Solar Team',
+  'space-optimizer': 'Roof Space Optimizer',
+  'application-matcher': 'Solar Application Matcher',
+  'manufacturer-lab': 'Manufacturer Comparison Lab',
+  'subsidy-calculator': 'Subsidy Calculator',
+};
+
 export function ActivityBlock({ block }) {
   if (!block || !block.activityId) return null;
 
@@ -29,11 +38,26 @@ export function ActivityBlock({ block }) {
     }
   };
 
+  const title = ACTIVITY_TITLES[block.activityId] || 'Interactive Activity';
+
   return (
-    <div className="content-card activity-card" style={{ padding: '0', overflow: 'hidden', height: '700px', backgroundColor: '#0d1117', borderRadius: '15px', border: '1px solid #30363d' }}>
-      <Suspense fallback={<div style={{ color: 'white', padding: '2rem', textAlign: 'center' }}>Loading Interactive Activity...</div>}>
-        {renderActivity()}
-      </Suspense>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+      {/* Simulation Title Card */}
+      <div className="simulation-title-card">
+        <div className="simulation-title-badge">
+          <span className="simulation-title-icon">🔬</span>
+        </div>
+        <div className="simulation-title-text">SIMULATION</div>
+        <div className="simulation-title-subtitle">{title}</div>
+        <div className="simulation-title-glow" />
+      </div>
+
+      {/* Activity Container */}
+      <div className="content-card activity-card" style={{ padding: '0', overflow: 'hidden', height: '700px', backgroundColor: '#0d1117', borderRadius: '0 0 15px 15px', border: '1px solid #30363d', borderTop: 'none' }}>
+        <Suspense fallback={<div style={{ color: 'white', padding: '2rem', textAlign: 'center' }}>Loading Interactive Activity...</div>}>
+          {renderActivity()}
+        </Suspense>
+      </div>
     </div>
   );
 }

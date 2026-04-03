@@ -3,25 +3,19 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CustomVideoPlayer } from './CustomVideoPlayer';
 import { ActivityBlock } from './ActivityBlock';
 
+const CHAPTER_AUDIO_SOURCES = {
+  'module1-chapter1': '/audio/m1ch1.mp3',
+  'module1-chapter1-2': '/audio/m1ch2.mp3',
+  'module1-chapter1-3': '/audio/m1ch3.mp3',
+  'module2-chapter1': '/audio/m2ch1.mp3',
+  'module2-chapter2': '/audio/m2ch2.mp3',
+  'module2-chapter3': '/audio/m2ch3.mp3',
+};
+
 export function ContentBlocks({ blocks, chapterId }) {
-  if (!blocks || !Array.length) return null;
+  if (!blocks || !blocks.length) return null;
 
-  // Helper to resolve the audio filename dynamically
-  const getAudioFileName = (id) => {
-    if (!id) return null;
-    const parts = id.split('-'); // e.g. ["module1", "chapter1", "2"]
-    if (parts.length < 2) return null;
-    const modNum = parts[0].replace('module', '');
-    let chNum = '1';
-    if (parts.length === 3) {
-      chNum = parts[2];
-    } else if (parts.length === 2) {
-      chNum = parts[1].replace('chapter', '');
-    }
-    return `m${modNum}ch${chNum}.mp3`;
-  };
-
-  const audioFileName = getAudioFileName(chapterId);
+  const audioSrc = chapterId ? CHAPTER_AUDIO_SOURCES[chapterId] ?? null : null;
 
   return (
     <div className="content-blocks">
@@ -41,20 +35,20 @@ export function ContentBlocks({ blocks, chapterId }) {
         }
 
         // Inject the audio player immediately after the level 1 heading
-        if (block.type === 'heading' && block.level === 1 && audioFileName) {
+        if (block.type === 'heading' && block.level === 1 && audioSrc) {
           return (
             <React.Fragment key={index}>
               {renderedBlock}
               <div className="audio-container">
                 <audio
-                  key={audioFileName}
+                  key={audioSrc}
                   controls
                   preload="auto"
                   controlsList="nodownload"
                   onContextMenu={(e) => e.preventDefault()}
                   onError={(e) => console.error('Audio error:', e.target.error)}
                 >
-                  <source src={`/audio/${audioFileName}`} type="audio/mp3" />
+                  <source src={audioSrc} type="audio/mpeg" />
                   Your browser does not support the audio element.
                 </audio>
               </div>
