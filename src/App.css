@@ -869,7 +869,7 @@
 /* ── Audio Player Styles ── */
 .audio-container {
   position: relative;
-  background: url('https://login.skillizee.io/s/articles/6996f2af0592535920f9fbab/images/Subtitle(4).gif') center center no-repeat;
+  background: url('/gif/Subtitle (8).gif') center center no-repeat;
   background-size: contain;
   border-radius: 16px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
