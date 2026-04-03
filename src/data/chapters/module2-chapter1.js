@@ -11,7 +11,7 @@ export const module2Chapter1 = {
     {
       type: 'video',
       title: 'Solar Panel - Uses & application',
-      url: '/videos/HOQpg_LYFx8.mp4'
+      url: 'https://www.youtube.com/embed/HOQpg_LYFx8'
     },
     {
       type: 'text',
@@ -106,7 +106,7 @@ export const module2Chapter1 = {
     {
       type: 'video',
       title: '5 Ways NASA Uses Solar Power',
-      url: '/videos/HHA3DwXNhjc.mp4'
+      url: 'https://www.youtube.com/embed/HHA3DwXNhjc'
     },
     {
       type: 'image',

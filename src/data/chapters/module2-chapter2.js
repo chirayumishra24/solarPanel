@@ -16,12 +16,12 @@ export const module2Chapter2 = {
     {
       type: 'video',
       title: "India's Secret Weapon to counter China’s Solar Dominance? : Waaree Energies | Business Case study",
-      url: '/videos/T1PLEPTbXc4.mp4'
+      url: 'https://www.youtube.com/embed/T1PLEPTbXc4'
     },
     {
       type: 'video',
       title: "Waaree Energies: India’s #1 Solar Module Maker",
-      url: '/videos/QR2MgNYRwSk.mp4'
+      url: 'https://www.youtube.com/embed/QR2MgNYRwSk'
     },
     {
       type: 'image',
@@ -139,7 +139,7 @@ export const module2Chapter2 = {
     {
       type: 'video',
       title: 'Subsidy for solar in India',
-      url: '/videos/aOXLUZNd1LY.mp4'
+      url: 'https://www.youtube.com/embed/aOXLUZNd1LY'
     },
     {
       type: 'text',

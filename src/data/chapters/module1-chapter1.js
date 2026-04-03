@@ -11,7 +11,7 @@ export const module1Chapter1 = {
     {
       type: 'video',
       title: 'What is Solar Power? | National Geographic',
-      url: '/videos/NLO9w963Aj0.mp4'
+      url: 'https://www.youtube.com/embed/NLO9w963Aj0'
     },
     {
       type: 'text',
@@ -25,7 +25,7 @@ export const module1Chapter1 = {
     {
       type: 'video',
       title: 'What is Solar Energy?',
-      url: '/videos/inPtRWtvDaM.mp4'
+      url: 'https://www.youtube.com/embed/inPtRWtvDaM'
     },
     {
       type: 'text',
@@ -80,12 +80,12 @@ export const module1Chapter1 = {
     {
       type: 'video',
       title: 'The photoelectric and photovoltaic effects | Physics | Khan Academy',
-      url: '/videos/HCCm0lFwqNw.mp4'
+      url: 'https://www.youtube.com/embed/HCCm0lFwqNw'
     },
     {
       type: 'video',
       title: 'The working principle of solar energy',
-      url: '/videos/0S1Wz1xaSLg.mp4'
+      url: 'https://www.youtube.com/embed/0S1Wz1xaSLg'
     },
     {
       type: 'text',

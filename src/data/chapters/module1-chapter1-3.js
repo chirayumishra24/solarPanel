@@ -15,7 +15,7 @@ export const module1Chapter1_3 = {
     {
       type: 'video',
       title: 'Types of Solar Panels: Monocrystalline, Polycrystalline, Monoperc & Thin Film',
-      url: '/videos/IUW5FZNxQmM.mp4'
+      url: 'https://www.youtube.com/embed/IUW5FZNxQmM'
     },
     {
       type: 'text',
