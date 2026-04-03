@@ -108,7 +108,7 @@ export const module2Chapter3 = {
     },
     {
       type: 'image',
-      url: 'https://login.skillizee.io/s/articles/69c601d53d00b7192a53bc2e/images/image-20260327093438-3.png',
+      url: 'https://login.skillizee.io/s/articles/69cf91fbdda97e3b5c790d2f/images/image-20260403155730-2.jpeg',
       alt: 'PM Surya Ghar'
     },
     {
@@ -131,7 +131,7 @@ export const module2Chapter3 = {
     },
     {
       type: 'image',
-      url: 'https://login.skillizee.io/s/articles/69c601d53d00b7192a53bc2e/images/image-20260327093438-4.png',
+      url: 'https://login.skillizee.io/s/articles/69cf91fbdda97e3b5c790d2f/images/image-20260403155730-1.jpeg',
       alt: 'PM KUSUM'
     },
     {

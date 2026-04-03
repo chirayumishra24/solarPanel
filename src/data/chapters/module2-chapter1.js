@@ -136,7 +136,7 @@ export const module2Chapter1 = {
     },
     {
       type: 'image',
-      url: 'https://login.skillizee.io/s/articles/69c6010c72156624f144c9ba/images/image-20260327093133-6.png',
+      url: 'https://login.skillizee.io/s/articles/69cf91fbdda97e3b5c790d2f/images/unnamed+(65).jpg',
       alt: 'Architectural & Urban 2'
     },
     {
@@ -159,12 +159,12 @@ export const module2Chapter1 = {
     },
     {
       type: 'image',
-      url: 'https://login.skillizee.io/s/articles/69c6010c72156624f144c9ba/images/image-20260327093133-7.png',
+      url: 'https://login.skillizee.io/s/articles/69cf91fbdda97e3b5c790d2f/images/image-20260403155730-6.png',
       alt: 'Transportation & Mobility'
     },
     {
       type: 'image',
-      url: 'https://login.skillizee.io/s/articles/69c6010c72156624f144c9ba/images/image-20260327093133-8.png',
+      url: 'https://login.skillizee.io//s/articles/69cf91fbdda97e3b5c790d2f/images/image-20260403155730-5.jpeg',
       alt: 'Transportation & Mobility 2'
     },
     {
@@ -187,7 +187,7 @@ export const module2Chapter1 = {
     },
     {
       type: 'image',
-      url: 'https://login.skillizee.io/s/articles/69c6010c72156624f144c9ba/images/image-20260327093133-9.png',
+      url: 'https://login.skillizee.io/s/articles/69cf91fbdda97e3b5c790d2f/images/image-20260403155730-4.jpeg',
       alt: 'Specialized & Industrial Uses'
     },
     {

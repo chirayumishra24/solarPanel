@@ -23,8 +23,9 @@ export const module1Chapter1_3 = {
     },
     {
       type: 'image',
-      url: 'https://login.skillizee.io/s/articles/69c35be10072e7d96812fd4a/images/image-20260325092217-1.png',
-      alt: 'Types of Panels Comparison Diagram'
+      url: 'https://login.skillizee.io/s/articles/69cf91fbdda97e3b5c790d2f/images/image-20260403155730-7.png',
+      alt: 'Types of Panels Comparison Diagram',
+      imageStyle: { maxWidth: '300px' }
     },
     {
       type: 'heading',

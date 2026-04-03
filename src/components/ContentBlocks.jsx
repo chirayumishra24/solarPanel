@@ -89,8 +89,8 @@ function VideoBlock({ block }) {
 
 function ImageBlock({ block }) {
   return (
-    <div className="content-card image-card">
-      <img src={block.url} alt={block.alt || 'Course illustration'} />
+    <div className={`content-card image-card ${block.className || ''}`} style={{ textAlign: 'center', ...block.containerStyle }}>
+      <img src={block.url} alt={block.alt || 'Course illustration'} style={{ margin: '0 auto', ...block.imageStyle }} />
     </div>
   );
 }
