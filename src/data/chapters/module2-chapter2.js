@@ -56,7 +56,7 @@ export const module2Chapter2 = {
     },
     {
       type: 'image',
-      url: 'https://login.skillizee.io/s/articles/69c60196ac5547d4ea96e383/images/image-20260327093334-2.png',
+      url: 'https://login.skillizee.io/s/articles/69cf91fbdda97e3b5c790d2f/images/image-20260403155730-3.jpeg',
       alt: 'Manufacturing scale'
     },
     {

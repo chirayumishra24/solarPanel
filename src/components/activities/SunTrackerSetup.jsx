@@ -1,7 +1,53 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Box, Cone, Sphere, Plane } from '@react-three/drei';
+import { OrbitControls, Box, Cone, Sphere, Plane, Line } from '@react-three/drei';
 import * as THREE from 'three';
+
+/* ─── Angle Arc Visualization ─── */
+function AngleArc({ panelTilt }) {
+  const points = useMemo(() => {
+    const pts = [];
+    const radius = 1.2;
+    const segments = 30;
+    const startAngle = -Math.PI / 2;
+    const endAngle = startAngle + panelTilt;
+    for (let i = 0; i <= segments; i++) {
+      const t = startAngle + (endAngle - startAngle) * (i / segments);
+      pts.push(new THREE.Vector3(0, Math.sin(t) * radius, Math.cos(t) * radius));
+    }
+    return pts;
+  }, [panelTilt]);
+
+  const degrees = Math.round((panelTilt / Math.PI) * 180);
+
+  return (
+    <group position={[0, 4.5, 1.5]}>
+      {/* Vertical reference line (0° = flat) */}
+      <Line
+        points={[[0, 0, 0], [0, 0, 1.3]]}
+        color="#FFB800"
+        lineWidth={1.5}
+        dashed
+        dashSize={0.1}
+        gapSize={0.05}
+      />
+      {/* Arc showing current tilt angle */}
+      {points.length > 1 && (
+        <Line
+          points={points}
+          color="#4CAF50"
+          lineWidth={2}
+        />
+      )}
+      {/* Line to panel surface direction */}
+      <Line
+        points={[[0, 0, 0], [0, Math.sin(-Math.PI / 2 + panelTilt) * 1.3, Math.cos(-Math.PI / 2 + panelTilt) * 1.3]]}
+        color="#4CAF50"
+        lineWidth={1.5}
+      />
+    </group>
+  );
+}
 
 /* ─── 3D House with Panel ─── */
 function House({ panelTilt, panelPan, sunPosition, setEfficiency }) {
@@ -39,6 +85,8 @@ function House({ panelTilt, panelPan, sunPosition, setEfficiency }) {
           </Box>
         </group>
       </group>
+      {/* Angle arc visualization */}
+      <AngleArc panelTilt={panelTilt} />
     </group>
   );
 }
@@ -147,6 +195,12 @@ const QUIZ_QUESTIONS = [
     options: ['It stays the same', 'It increases', 'It drops to nearly 0%', 'The panel breaks'],
     correct: 2,
     explanation: 'When the panel faces away from the sun, it cannot absorb photons, so energy output drops to nearly 0%. Alignment is crucial!'
+  },
+  {
+    question: 'What is the ideal tilt angle for a solar panel in India (~28°N latitude)?',
+    options: ['0° (flat)', 'Equal to latitude (~28°)', '90° (vertical)', '180° (upside down)'],
+    correct: 1,
+    explanation: 'The optimal tilt angle for a fixed solar panel is roughly equal to the location\'s latitude. For most of India (~28°N), a tilt of about 28° from horizontal gives the best year-round output!'
   }
 ];
 
@@ -156,6 +210,7 @@ export default function SunTrackerSetup() {
   const [panelPan, setPanelPan] = useState(0);
   const [efficiency, setEfficiency] = useState(0);
   const [peakEfficiency, setPeakEfficiency] = useState(0);
+  const [showAngleInfo, setShowAngleInfo] = useState(false);
 
   // Overlay states
   const [showStartOverlay, setShowStartOverlay] = useState(true);
@@ -164,6 +219,10 @@ export default function SunTrackerSetup() {
   const [quizAnswers, setQuizAnswers] = useState({});
   const [showCongrats, setShowCongrats] = useState(false);
   const [hasTriggeredQuiz, setHasTriggeredQuiz] = useState(false);
+
+  // Derived angle values in degrees
+  const tiltDeg = Math.round((panelTilt / Math.PI) * 180);
+  const panDeg = Math.round((panelPan / Math.PI) * 180);
 
   // Track peak efficiency
   if (efficiency > peakEfficiency) {
@@ -214,10 +273,11 @@ export default function SunTrackerSetup() {
           
           <div style={{ flex: 1, minWidth: '200px' }}>
             <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
-              <span>Panel Tilt (Up/Down)</span>
+              <span>Panel Tilt (Up/Down): <strong style={{ color: '#4CAF50' }}>{tiltDeg}°</strong></span>
+              <span style={{ color: '#8b949e', fontSize: '10px' }}>0° = flat, 90° = vertical</span>
             </label>
             <input 
-              type="range" min="0" max={Math.PI / 2} step="0.1" 
+              type="range" min="0" max={Math.PI / 2} step="0.01" 
               value={panelTilt} onChange={(e) => setPanelTilt(parseFloat(e.target.value))}
               style={{ width: '100%' }}
             />
@@ -225,10 +285,11 @@ export default function SunTrackerSetup() {
           
           <div style={{ flex: 1, minWidth: '200px' }}>
             <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
-              <span>Panel Pan (Left/Right)</span>
+              <span>Panel Pan (Left/Right): <strong style={{ color: '#58a6ff' }}>{panDeg > 0 ? `+${panDeg}` : panDeg}°</strong></span>
+              <span style={{ color: '#8b949e', fontSize: '10px' }}>Azimuth</span>
             </label>
             <input 
-              type="range" min={-Math.PI/2} max={Math.PI/2} step="0.1" 
+              type="range" min={-Math.PI/2} max={Math.PI/2} step="0.01" 
               value={panelPan} onChange={(e) => setPanelPan(parseFloat(e.target.value))}
               style={{ width: '100%' }}
             />
@@ -264,6 +325,74 @@ export default function SunTrackerSetup() {
             Peak: {peakEfficiency.toFixed(0)}%
           </div>
         </div>
+
+        {/* Angle Info HUD */}
+        <div style={{
+          position: 'absolute', bottom: '20px', left: '20px',
+          background: 'rgba(0,0,0,0.75)', padding: '14px', borderRadius: '12px',
+          border: '1px solid #30363d', width: '230px', backdropFilter: 'blur(8px)'
+        }}>
+          <div 
+            onClick={() => setShowAngleInfo(!showAngleInfo)}
+            style={{ 
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              cursor: 'pointer', userSelect: 'none'
+            }}
+          >
+            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#FFB800' }}>📐 Panel Angle</div>
+            <span style={{ fontSize: '10px', color: '#8b949e' }}>{showAngleInfo ? '▼ Hide' : '▶ Learn More'}</span>
+          </div>
+
+          {/* Current angle readout */}
+          <div style={{ 
+            display: 'flex', gap: '12px', marginTop: '10px', 
+            background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px 10px'
+          }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '9px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tilt</div>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#4CAF50' }}>{tiltDeg}°</div>
+            </div>
+            <div style={{ width: '1px', background: '#30363d' }} />
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: '9px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Azimuth</div>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#58a6ff' }}>{panDeg > 0 ? `+${panDeg}` : panDeg}°</div>
+            </div>
+          </div>
+
+          {/* Expandable angle education section */}
+          {showAngleInfo && (
+            <div style={{ 
+              marginTop: '12px', fontSize: '11px', lineHeight: '1.5', color: '#c9d1d9',
+              animation: 'fadeIn 0.3s ease'
+            }}>
+              <div style={{ 
+                background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)',
+                borderRadius: '8px', padding: '10px', marginBottom: '8px'
+              }}>
+                <div style={{ fontWeight: 'bold', color: '#FFB800', marginBottom: '4px', fontSize: '11px' }}>📏 How Angles Are Measured</div>
+                <p style={{ margin: '0 0 6px 0' }}>
+                  <strong style={{ color: '#4CAF50' }}>Tilt angle</strong> (elevation): Measured from the <em>horizontal surface</em> (the ground). 
+                  0° = panel lies flat facing up. 90° = panel is vertical.
+                </p>
+                <p style={{ margin: '0' }}>
+                  <strong style={{ color: '#58a6ff' }}>Azimuth</strong> (pan): Measured from <em>true south</em> (in the northern hemisphere). 
+                  0° = facing south. Negative = east. Positive = west.
+                </p>
+              </div>
+
+              <div style={{ 
+                background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.2)',
+                borderRadius: '8px', padding: '10px'
+              }}>
+                <div style={{ fontWeight: 'bold', color: '#4CAF50', marginBottom: '4px', fontSize: '11px' }}>💡 Pro Tip</div>
+                <p style={{ margin: 0 }}>
+                  For India (~28°N latitude), the <strong>ideal tilt</strong> is approximately <strong style={{ color: '#FFB800' }}>28°</strong> facing due south. 
+                  Adjust seasonally: steeper in winter (tilt + 15°), flatter in summer (tilt − 15°).
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ═══ START OVERLAY ═══ */}
@@ -279,10 +408,25 @@ export default function SunTrackerSetup() {
             <div style={{ fontWeight: 'bold', color: '#FFB800', marginBottom: '8px' }}>🎮 HOW TO PLAY:</div>
             <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <li>Use the <strong>Time slider</strong> to move the sun across the sky</li>
-              <li>Adjust <strong>Panel Tilt</strong> (up/down) and <strong>Panel Pan</strong> (left/right)</li>
+              <li>Adjust <strong>Panel Tilt</strong> (up/down angle from horizontal) and <strong>Panel Pan</strong> (left/right azimuth)</li>
               <li>Watch the <strong>Energy Output</strong> meter — aim for green!</li>
+              <li>Check the <strong>📐 Angle Info</strong> panel to learn how solar angles work</li>
               <li>Once you hit ≥80%, a quick quiz will test your knowledge!</li>
             </ul>
+          </div>
+
+          {/* Angle education teaser */}
+          <div style={{ 
+            marginTop: '16px', background: 'rgba(76,175,80,0.1)', 
+            border: '1px solid rgba(76,175,80,0.3)', borderRadius: '12px', padding: '12px' 
+          }}>
+            <div style={{ fontWeight: 'bold', color: '#4CAF50', marginBottom: '4px', fontSize: '12px' }}>📐 ABOUT SOLAR PANEL ANGLES</div>
+            <p style={{ margin: 0, fontSize: '12px' }}>
+              Solar panels perform best when sunlight hits them at a <strong>90° perpendicular angle</strong>. 
+              The <strong style={{ color: '#4CAF50' }}>tilt</strong> (how far the panel tilts from horizontal) and 
+              <strong style={{ color: '#58a6ff' }}> azimuth</strong> (compass direction it faces) together determine energy output. 
+              In India, panels are typically tilted at <strong style={{ color: '#FFB800' }}>~28°</strong> facing south.
+            </p>
           </div>
         </SolarManOverlay>
       )}
