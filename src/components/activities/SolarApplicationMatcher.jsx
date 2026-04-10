@@ -1,132 +1,706 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { OrbitControls, Sphere, Box, Cylinder, Torus, Float, Stars, useTexture, Sparkles, Trail } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls, Sphere, Box, Cylinder, Plane, Float, Text, RoundedBox, Cone, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 
-/* ─── Space Adventure Solar System Scene ─── */
-function RotatingSun() {
-  const sunRef = useRef();
-  useFrame((_, delta) => {
-    if (sunRef.current) sunRef.current.rotation.y += delta * 0.1;
+/* ════════════════════════════════════════════════════════
+   3D SOLAR CITY DIORAMA
+   Interactive miniature world showing all 7 solar
+   application types in their real-world context.
+   Each installation glows when its scenario is active.
+   ════════════════════════════════════════════════════════ */
+
+/* ─── Dynamic Daytime Sky ─── */
+function DynamicSky({ sunAngle }) {
+  const { scene } = useThree();
+  useFrame(() => {
+    const h = Math.sin(sunAngle);
+    const r = 0.45 + h * 0.1;
+    const g = 0.70 + h * 0.12;
+    const b = 0.88 + h * 0.06;
+    scene.background = new THREE.Color(r, g, b);
+  });
+  return null;
+}
+
+/* ─── Moving Sun (directional light) ─── */
+function SunLight({ sunAngle }) {
+  const x = Math.cos(sunAngle) * 30;
+  const y = Math.max(Math.sin(sunAngle) * 30 + 5, 8);
+  return (
+    <directionalLight
+      position={[x, y, -10]}
+      intensity={2.5}
+      color="#fff5e0"
+      castShadow
+      shadow-mapSize-width={2048}
+      shadow-mapSize-height={2048}
+      shadow-camera-left={-20}
+      shadow-camera-right={20}
+      shadow-camera-top={20}
+      shadow-camera-bottom={-20}
+      shadow-camera-near={1}
+      shadow-camera-far={80}
+    />
+  );
+}
+
+/* ─── Selection Beacon (glows over the active installation) ─── */
+function SelectionBeacon({ position, color, label }) {
+  const ringRef = useRef();
+  const beamRef = useRef();
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    if (ringRef.current) {
+      ringRef.current.rotation.z = t * 1.5;
+      ringRef.current.scale.setScalar(1 + Math.sin(t * 3) * 0.08);
+    }
+    if (beamRef.current) {
+      beamRef.current.material.opacity = 0.15 + Math.sin(t * 4) * 0.1;
+    }
   });
 
   return (
-    <group ref={sunRef}>
-      {/* Core */}
-      <Sphere args={[1.5, 64, 64]}>
-        <meshBasicMaterial color="#ffcc00" />
-      </Sphere>
-      {/* Corona / Outer glow */}
-      <Sphere args={[1.8, 64, 64]}>
-        <meshBasicMaterial color="#ffaa00" transparent opacity={0.3} side={THREE.BackSide} />
-      </Sphere>
-      <Sphere args={[2.3, 64, 64]}>
-        <meshBasicMaterial color="#ff5500" transparent opacity={0.1} side={THREE.BackSide} />
-      </Sphere>
-      {/* Solar flares / energy dust */}
-      <Sparkles count={400} scale={3.5} size={6} speed={0.4} color="#ff9900" opacity={0.6} />
-      {/* Sun Light Source */}
-      <pointLight position={[0, 0, 0]} intensity={6} color="#fff1ba" distance={100} decay={1.5} castShadow />
+    <group position={position}>
+      {/* Pulsing ring at ground level */}
+      <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
+        <ringGeometry args={[1.6, 1.85, 32]} />
+        <meshBasicMaterial color={color} transparent opacity={0.5} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Vertical light beam */}
+      <mesh ref={beamRef} position={[0, 2.5, 0]}>
+        <cylinderGeometry args={[0.03, 0.03, 5, 8]} />
+        <meshBasicMaterial color={color} transparent opacity={0.2} />
+      </mesh>
+      {/* Floating label */}
+      <Float speed={3} floatIntensity={0.2}>
+        <Text
+          position={[0, 5.5, 0]}
+          fontSize={0.35}
+          color="#ffffff"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.03}
+          outlineColor="#000000"
+        >
+          {label}
+        </Text>
+      </Float>
     </group>
   );
 }
 
-function Planet({ p, highlightType, earthTexture }) {
-  const orbitRef = useRef();
-  const groupRef = useRef();
-  const isSelected = highlightType === p.type;
-  
-  // Rotate the planet around the sun
-  useFrame((_, delta) => {
-    if (orbitRef.current) {
-      orbitRef.current.rotation.y += delta * p.speed;
-    }
-    if (groupRef.current) {
-      // Planet's own rotation
-      groupRef.current.rotation.y += delta * 0.5;
+/* ─── Tree (reusable) ─── */
+function Tree({ position, scale = 1 }) {
+  return (
+    <group position={position} scale={scale}>
+      <Cylinder args={[0.06, 0.08, 0.6, 6]} position={[0, 0.3, 0]} castShadow>
+        <meshStandardMaterial color="#5d4037" />
+      </Cylinder>
+      <Cone args={[0.3, 0.7, 8]} position={[0, 0.85, 0]} castShadow>
+        <meshStandardMaterial color="#2e7d32" />
+      </Cone>
+      <Cone args={[0.22, 0.5, 8]} position={[0, 1.2, 0]} castShadow>
+        <meshStandardMaterial color="#388e3c" />
+      </Cone>
+    </group>
+  );
+}
+
+/* ─── Reusable Solar Panel ─── */
+function SolarPanel({ position, rotation = [0, 0, 0], scale = 1, selected }) {
+  return (
+    <group position={position} rotation={rotation} scale={scale}>
+      <Box args={[0.5, 0.02, 0.35]} castShadow>
+        <meshStandardMaterial
+          color="#1a3a5c"
+          metalness={0.85}
+          roughness={0.15}
+          emissive={selected ? "#4dd0e1" : "#000000"}
+          emissiveIntensity={selected ? 0.5 : 0}
+        />
+      </Box>
+      <Box args={[0.52, 0.025, 0.37]}>
+        <meshStandardMaterial color="#888" metalness={0.8} roughness={0.3} />
+      </Box>
+    </group>
+  );
+}
+
+/* ═════════════════════════════════════
+   INSTALLATION COMPONENTS (7 types)
+   ═════════════════════════════════════ */
+
+/* 1 ─ Residential House with Rooftop Solar */
+function ResidentialHouse({ selected }) {
+  const em = selected ? 0.35 : 0;
+  return (
+    <group position={[-5, 0, -3.5]}>
+      {/* House body */}
+      <Box args={[1.8, 1.2, 1.4]} position={[0, 0.6, 0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#e8d5b7" emissive="#e67e22" emissiveIntensity={em} />
+      </Box>
+      {/* Roof halves */}
+      <Box args={[2.0, 0.08, 1.1]} position={[0, 1.35, -0.35]} rotation={[0.45, 0, 0]} castShadow>
+        <meshStandardMaterial color="#8b4513" />
+      </Box>
+      <Box args={[2.0, 0.08, 1.1]} position={[0, 1.35, 0.35]} rotation={[-0.45, 0, 0]} castShadow>
+        <meshStandardMaterial color="#8b4513" />
+      </Box>
+      {/* Solar panels on roof */}
+      <SolarPanel position={[-0.3, 1.55, -0.35]} rotation={[0.45, 0, 0]} selected={selected} />
+      <SolarPanel position={[0.3, 1.55, -0.35]} rotation={[0.45, 0, 0]} selected={selected} />
+      {/* Windows */}
+      <Box args={[0.3, 0.3, 0.02]} position={[-0.45, 0.8, 0.71]}>
+        <meshStandardMaterial color="#87CEEB" metalness={0.5} roughness={0.2} />
+      </Box>
+      <Box args={[0.3, 0.3, 0.02]} position={[0.45, 0.8, 0.71]}>
+        <meshStandardMaterial color="#87CEEB" metalness={0.5} roughness={0.2} />
+      </Box>
+      {/* Door */}
+      <Box args={[0.35, 0.55, 0.02]} position={[0, 0.28, 0.71]}>
+        <meshStandardMaterial color="#6d4c2a" />
+      </Box>
+      {/* White fence */}
+      {[-1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2].map((x, i) => (
+        <Cylinder key={i} args={[0.02, 0.02, 0.35, 6]} position={[x, 0.18, 1.15]} castShadow>
+          <meshStandardMaterial color="#fff" />
+        </Cylinder>
+      ))}
+      {/* Fence cross-rail */}
+      <Box args={[2.4, 0.03, 0.02]} position={[0, 0.25, 1.15]}>
+        <meshStandardMaterial color="#fff" />
+      </Box>
+      {/* Garden patch */}
+      <Box args={[2.5, 0.02, 0.4]} position={[0, 0.005, 1.4]} receiveShadow>
+        <meshStandardMaterial color="#4caf50" />
+      </Box>
+      {/* Mailbox */}
+      <Cylinder args={[0.03, 0.03, 0.4, 6]} position={[1.3, 0.2, 1.15]} castShadow>
+        <meshStandardMaterial color="#333" />
+      </Cylinder>
+      <Box args={[0.12, 0.1, 0.08]} position={[1.3, 0.45, 1.15]} castShadow>
+        <meshStandardMaterial color="#e53935" />
+      </Box>
+    </group>
+  );
+}
+
+/* 2 ─ Space Station (orbiting above the diorama) */
+function SpaceStation({ selected }) {
+  const stationRef = useRef();
+  useFrame((state) => {
+    if (stationRef.current) {
+      const t = state.clock.elapsedTime * 0.12;
+      stationRef.current.position.x = Math.cos(t) * 5;
+      stationRef.current.position.z = Math.sin(t) * 5;
+      stationRef.current.rotation.y = t;
     }
   });
-
+  const em = selected ? 0.45 : 0;
   return (
-    <group ref={orbitRef}>
-      {/* Orbit Path */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[p.distance - 0.02, p.distance + 0.02, 128]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={isSelected ? 0.25 : 0.04} side={THREE.DoubleSide} />
-      </mesh>
-      
-      {/* Planet Mesh & Elements */}
-      <group position={[p.distance, 0, 0]} ref={groupRef}>
-        <Trail width={isSelected ? 1.5 : 0.5} color={p.color} length={isSelected ? 8 : 4} attenuation={(t) => t * t}>
-          <Float speed={2} floatIntensity={0.5}>
-            {/* Core planet */}
-            <Sphere args={[isSelected ? p.size * 1.5 : p.size, 64, 64]} castShadow receiveShadow>
-              {p.isEarth ? (
-                <meshStandardMaterial map={earthTexture} roughness={0.6} metalness={0.1} />
-              ) : (
-                <meshStandardMaterial color={p.color} roughness={0.7} metalness={0.2} />
-              )}
-            </Sphere>
-            
-            {/* Atmospheric glow */}
-            <Sphere args={[isSelected ? p.size * 1.6 : p.size * 1.1, 32, 32]}>
-              <meshStandardMaterial color={isSelected ? '#ffffff' : p.color} transparent opacity={isSelected ? 0.3 : 0.15} roughness={1} side={THREE.BackSide} />
-            </Sphere>
+    <group ref={stationRef} position={[0, 8, 0]}>
+      {/* Central habitation module */}
+      <Cylinder args={[0.15, 0.15, 1.0, 8]} rotation={[0, 0, Math.PI / 2]} castShadow>
+        <meshStandardMaterial color="#ccc" metalness={0.7} roughness={0.3} emissive="#8e44ad" emissiveIntensity={em} />
+      </Cylinder>
+      {/* Node module (perpendicular) */}
+      <Cylinder args={[0.1, 0.1, 0.5, 8]} castShadow>
+        <meshStandardMaterial color="#bbb" metalness={0.6} roughness={0.4} />
+      </Cylinder>
+      {/* Solar wing — left array */}
+      <group position={[-0.7, 0, 0]}>
+        <Box args={[0.05, 1.4, 0.5]} castShadow>
+          <meshStandardMaterial color="#1a3a5c" metalness={0.85} roughness={0.15} emissive="#4dd0e1" emissiveIntensity={selected ? 0.6 : 0} />
+        </Box>
+        {/* Support truss */}
+        <Box args={[0.25, 0.02, 0.02]} position={[0.12, 0, 0]}>
+          <meshStandardMaterial color="#999" metalness={0.7} />
+        </Box>
+      </group>
+      {/* Solar wing — right array */}
+      <group position={[0.7, 0, 0]}>
+        <Box args={[0.05, 1.4, 0.5]} castShadow>
+          <meshStandardMaterial color="#1a3a5c" metalness={0.85} roughness={0.15} emissive="#4dd0e1" emissiveIntensity={selected ? 0.6 : 0} />
+        </Box>
+        <Box args={[0.25, 0.02, 0.02]} position={[-0.12, 0, 0]}>
+          <meshStandardMaterial color="#999" metalness={0.7} />
+        </Box>
+      </group>
+      {/* Radiator panel */}
+      <Box args={[0.04, 0.15, 0.7]} position={[0, 0.2, 0]} castShadow>
+        <meshStandardMaterial color="#ddd" metalness={0.6} />
+      </Box>
+      {/* Antenna */}
+      <Cylinder args={[0.008, 0.008, 0.35, 4]} position={[0, -0.15, 0.4]}>
+        <meshStandardMaterial color="#fff" />
+      </Cylinder>
+      <Sphere args={[0.025, 8, 8]} position={[0, -0.15, 0.58]}>
+        <meshStandardMaterial color="#eee" metalness={0.5} />
+      </Sphere>
+      {/* Selected sparkle effect */}
+      {selected && (
+        <Sparkles count={50} scale={2.5} size={3} speed={0.5} color="#8e44ad" opacity={0.6} />
+      )}
+    </group>
+  );
+}
 
-            {/* Planetary Rings */}
-            {p.hasRings && (
-              <mesh rotation={[Math.PI / 2.5, 0, 0]} receiveShadow castShadow>
-                <ringGeometry args={[p.size * 1.6, p.size * 2.4, 64]} />
-                <meshStandardMaterial color={p.color} transparent opacity={0.6} side={THREE.DoubleSide} metalness={0.4} roughness={0.6} />
-              </mesh>
-            )}
+/* 3 ─ Farm with Solar Water Pump (Agriculture) */
+function FarmArea({ selected }) {
+  const em = selected ? 0.3 : 0;
+  return (
+    <group position={[-5, 0, 3.5]}>
+      {/* Crop field rows */}
+      {[0, 0.3, 0.6, 0.9, 1.2].map((z, i) => (
+        <Box key={i} args={[2.5, 0.08, 0.12]} position={[0, 0.04, z - 0.3]} receiveShadow>
+          <meshStandardMaterial color="#558b2f" />
+        </Box>
+      ))}
+      {/* Tilled earth between rows */}
+      <Plane args={[2.5, 1.6]} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0.3]} receiveShadow>
+        <meshStandardMaterial color="#6d4c41" roughness={0.95} />
+      </Plane>
+      {/* Solar pump structure */}
+      <group position={[1.6, 0, 0.6]}>
+        <Cylinder args={[0.08, 0.08, 0.8, 8]} position={[0, 0.4, 0]} castShadow>
+          <meshStandardMaterial color="#666" metalness={0.6} />
+        </Cylinder>
+        <SolarPanel position={[0, 0.9, 0]} rotation={[-0.5, 0, 0]} scale={0.8} selected={selected} />
+        {/* Water pipe */}
+        <Cylinder args={[0.025, 0.025, 1.2, 6]} position={[-0.7, 0.15, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <meshStandardMaterial color="#607d8b" metalness={0.5} />
+        </Cylinder>
+      </group>
+      {/* Well */}
+      <Cylinder args={[0.2, 0.2, 0.3, 12]} position={[1.6, 0.15, -0.3]} castShadow>
+        <meshStandardMaterial color="#795548" />
+      </Cylinder>
+      <Cylinder args={[0.15, 0.15, 0.05, 12]} position={[1.6, 0.32, -0.3]}>
+        <meshStandardMaterial color="#2196f3" metalness={0.3} emissive="#27ae60" emissiveIntensity={em} />
+      </Cylinder>
+      {/* Small barn */}
+      <Box args={[0.8, 0.6, 0.6]} position={[-1.0, 0.3, 0.6]} castShadow>
+        <meshStandardMaterial color="#a1887f" emissive="#27ae60" emissiveIntensity={em} />
+      </Box>
+      <Box args={[0.9, 0.08, 0.7]} position={[-1.0, 0.65, 0.6]} castShadow>
+        <meshStandardMaterial color="#6d4c41" />
+      </Box>
+      {/* Scarecrow */}
+      <Cylinder args={[0.02, 0.02, 0.7, 4]} position={[0.5, 0.35, 0.9]} castShadow>
+        <meshStandardMaterial color="#5d4037" />
+      </Cylinder>
+      <Box args={[0.5, 0.02, 0.02]} position={[0.5, 0.55, 0.9]}>
+        <meshStandardMaterial color="#5d4037" />
+      </Box>
+      <Sphere args={[0.06, 8, 8]} position={[0.5, 0.75, 0.9]}>
+        <meshStandardMaterial color="#ffcc80" />
+      </Sphere>
+    </group>
+  );
+}
 
-            {/* Highlight Selection Indicator */}
-            {isSelected && (
-              <Sphere args={[p.size * 1.8, 32, 32]}>
-                <meshBasicMaterial color={p.color} transparent opacity={0.2} wireframe />
-              </Sphere>
-            )}
-          </Float>
-        </Trail>
+/* 4 ─ Hiker with Portable Solar Panel */
+function PortableHiker({ selected }) {
+  const em = selected ? 0.4 : 0;
+  return (
+    <group position={[0, 0, -6]}>
+      {/* Rocky terrain / small mountain */}
+      <Cone args={[1.2, 1.8, 8]} position={[-0.5, 0.9, -0.5]} castShadow>
+        <meshStandardMaterial color="#8d6e63" roughness={0.95} />
+      </Cone>
+      <Cone args={[0.7, 1.2, 6]} position={[0.8, 0.6, -0.8]} castShadow>
+        <meshStandardMaterial color="#795548" roughness={0.95} />
+      </Cone>
+      {/* Snow cap on larger peak */}
+      <Cone args={[0.3, 0.3, 8]} position={[-0.5, 1.65, -0.5]} castShadow>
+        <meshStandardMaterial color="#fff" roughness={0.5} />
+      </Cone>
+      {/* Hiker figure */}
+      <group position={[0.3, 0, 0.5]}>
+        {/* Body */}
+        <Cylinder args={[0.08, 0.06, 0.5, 8]} position={[0, 0.45, 0]} castShadow>
+          <meshStandardMaterial color="#e53935" emissive="#3498db" emissiveIntensity={em} />
+        </Cylinder>
+        {/* Head */}
+        <Sphere args={[0.1, 16, 16]} position={[0, 0.8, 0]} castShadow>
+          <meshStandardMaterial color="#ffcc80" />
+        </Sphere>
+        {/* Hat */}
+        <Cylinder args={[0.12, 0.14, 0.05, 12]} position={[0, 0.9, 0]} castShadow>
+          <meshStandardMaterial color="#ff8f00" />
+        </Cylinder>
+        {/* Legs */}
+        <Cylinder args={[0.03, 0.03, 0.3, 6]} position={[-0.05, 0.1, 0]}>
+          <meshStandardMaterial color="#1565c0" />
+        </Cylinder>
+        <Cylinder args={[0.03, 0.03, 0.3, 6]} position={[0.05, 0.1, 0]}>
+          <meshStandardMaterial color="#1565c0" />
+        </Cylinder>
+        {/* Backpack */}
+        <Box args={[0.14, 0.22, 0.1]} position={[0, 0.52, -0.09]} castShadow>
+          <meshStandardMaterial color="#ff8f00" />
+        </Box>
+        {/* Solar panel on backpack */}
+        <Box args={[0.13, 0.14, 0.02]} position={[0, 0.57, -0.15]} castShadow>
+          <meshStandardMaterial color="#1a3a5c" metalness={0.85} roughness={0.15} emissive="#4dd0e1" emissiveIntensity={selected ? 0.6 : 0} />
+        </Box>
+        {/* Hiking stick */}
+        <Cylinder args={[0.012, 0.012, 0.7, 4]} position={[0.15, 0.28, 0.05]} rotation={[0.15, 0, -0.1]}>
+          <meshStandardMaterial color="#5d4037" />
+        </Cylinder>
+      </group>
+      {/* Hiking trail/path */}
+      <Box args={[3.5, 0.01, 0.3]} position={[0, 0.005, 1.0]} rotation={[0, 0.3, 0]}>
+        <meshStandardMaterial color="#a1887f" roughness={0.9} />
+      </Box>
+      {/* Small campfire */}
+      <group position={[-0.8, 0, 0.7]}>
+        {[0, 1, 2, 3, 4, 5].map(i => (
+          <Cylinder key={i} args={[0.03, 0.03, 0.12, 4]}
+            position={[Math.cos(i * Math.PI / 3) * 0.1, 0.06, Math.sin(i * Math.PI / 3) * 0.1]} castShadow>
+            <meshStandardMaterial color="#795548" />
+          </Cylinder>
+        ))}
+        <Sphere args={[0.04, 8, 8]} position={[0, 0.12, 0]}>
+          <meshStandardMaterial color="#ff6600" emissive="#ff4400" emissiveIntensity={0.5} />
+        </Sphere>
+        <Sparkles count={8} scale={0.15} size={2} speed={1.5} color="#ff6600" opacity={0.8} />
       </group>
     </group>
   );
 }
 
-function SolarSystemScene({ highlightType }) {
-  const earthTexture = useTexture('/images/earth-texture.png');
-  
-  useMemo(() => {
-    earthTexture.minFilter = THREE.LinearFilter;
-    earthTexture.magFilter = THREE.LinearFilter;
-    earthTexture.colorSpace = THREE.SRGBColorSpace;
-  }, [earthTexture]);
-
-  const planets = [
-    { type: 'residential', color: '#e67e22', distance: 2.8, speed: 0.6, size: 0.2, hasRings: false },
-    { type: 'space', color: '#8e44ad', distance: 4.0, speed: 0.45, size: 0.25, hasRings: false },
-    { type: 'agriculture', color: '#27ae60', distance: 5.5, speed: 0.35, size: 0.35, hasRings: false, isEarth: true },
-    { type: 'portable', color: '#3498db', distance: 7.0, speed: 0.28, size: 0.2, hasRings: false },
-    { type: 'bipv', color: '#1abc9c', distance: 8.8, speed: 0.2, size: 0.45, hasRings: true },
-    { type: 'transport', color: '#e74c3c', distance: 10.5, speed: 0.15, size: 0.3, hasRings: false },
-    { type: 'floating', color: '#2980b9', distance: 12.5, speed: 0.1, size: 0.4, hasRings: false },
-  ];
-
+/* 5 ─ BIPV Glass Skyscraper */
+function BIPVSkyscraper({ selected }) {
+  const em = selected ? 0.3 : 0;
   return (
-    <group>
-      <Stars radius={100} depth={50} count={5000} factor={5} saturation={0.5} fade speed={1.5} />
-      <Sparkles count={1500} scale={30} size={1.5} speed={0.2} color="#ffffff" opacity={0.3} />
-      <ambientLight intensity={0.03} />
-      <RotatingSun />
-      {planets.map(p => (
-        <Planet key={p.type} p={p} highlightType={highlightType} earthTexture={earthTexture} />
+    <group position={[5, 0, -3.5]}>
+      {/* Main glass tower */}
+      <Box args={[1.2, 3.5, 1.0]} position={[0, 1.75, 0]} castShadow receiveShadow>
+        <meshStandardMaterial
+          color="#4fc3f7"
+          metalness={0.7}
+          roughness={0.1}
+          transparent
+          opacity={0.75}
+          emissive="#1abc9c"
+          emissiveIntensity={em}
+        />
+      </Box>
+      {/* Floor separator lines */}
+      {[0.5, 1.0, 1.5, 2.0, 2.5, 3.0].map((y, i) => (
+        <Box key={i} args={[1.22, 0.02, 1.02]} position={[0, y, 0]}>
+          <meshStandardMaterial color="#b0bec5" metalness={0.6} />
+        </Box>
       ))}
+      {/* Roof */}
+      <Box args={[1.3, 0.06, 1.1]} position={[0, 3.53, 0]} castShadow>
+        <meshStandardMaterial color="#78909c" metalness={0.7} />
+      </Box>
+      {/* Helipad circle on roof */}
+      <Cylinder args={[0.3, 0.3, 0.01, 24]} position={[0, 3.57, 0]}>
+        <meshStandardMaterial color="#fdd835" />
+      </Cylinder>
+      {/* Ground plaza */}
+      <Box args={[2.5, 0.02, 2.0]} position={[0, 0.005, 0]} receiveShadow>
+        <meshStandardMaterial color="#cfd8dc" roughness={0.8} />
+      </Box>
+      {/* Entrance */}
+      <Box args={[0.5, 0.6, 0.02]} position={[0, 0.3, 0.51]}>
+        <meshStandardMaterial color="#263238" metalness={0.5} />
+      </Box>
+      {/* Revolving door indicator */}
+      <Cylinder args={[0.12, 0.12, 0.55, 12]} position={[0, 0.28, 0.52]}>
+        <meshStandardMaterial color="#90a4ae" transparent opacity={0.4} />
+      </Cylinder>
+      {/* Side shorter building */}
+      <Box args={[0.6, 1.5, 0.8]} position={[1.2, 0.75, 0]} castShadow receiveShadow>
+        <meshStandardMaterial
+          color="#80deea"
+          metalness={0.6}
+          roughness={0.2}
+          transparent
+          opacity={0.65}
+          emissive="#1abc9c"
+          emissiveIntensity={em * 0.5}
+        />
+      </Box>
     </group>
   );
 }
 
-/* ─── Data ─── */
+/* 6 ─ EV with Solar Roof (Transport) */
+function TransportEV({ selected }) {
+  const em = selected ? 0.3 : 0;
+  return (
+    <group position={[5, 0, 3.5]}>
+      {/* Car body */}
+      <RoundedBox args={[1.2, 0.4, 0.6]} radius={0.08} position={[0, 0.3, 0]} castShadow>
+        <meshStandardMaterial color="#e0e0e0" metalness={0.5} roughness={0.3} emissive="#e74c3c" emissiveIntensity={em} />
+      </RoundedBox>
+      {/* Cabin */}
+      <RoundedBox args={[0.7, 0.3, 0.55]} radius={0.06} position={[0.05, 0.6, 0]} castShadow>
+        <meshStandardMaterial color="#90a4ae" metalness={0.6} roughness={0.2} transparent opacity={0.8} />
+      </RoundedBox>
+      {/* Solar roof panel */}
+      <Box args={[0.72, 0.02, 0.57]} position={[0.05, 0.76, 0]} castShadow>
+        <meshStandardMaterial color="#1a3a5c" metalness={0.85} roughness={0.15} emissive="#4dd0e1" emissiveIntensity={selected ? 0.6 : 0} />
+      </Box>
+      {/* Wheels */}
+      {[[-0.35, 0.12, 0.32], [-0.35, 0.12, -0.32], [0.35, 0.12, 0.32], [0.35, 0.12, -0.32]].map((pos, i) => (
+        <Cylinder key={i} args={[0.1, 0.1, 0.06, 16]} position={pos} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <meshStandardMaterial color="#212121" roughness={0.9} />
+        </Cylinder>
+      ))}
+      {/* Headlights */}
+      <Sphere args={[0.04, 8, 8]} position={[-0.6, 0.32, 0.18]}>
+        <meshStandardMaterial color="#fff" emissive="#fdd835" emissiveIntensity={0.3} />
+      </Sphere>
+      <Sphere args={[0.04, 8, 8]} position={[-0.6, 0.32, -0.18]}>
+        <meshStandardMaterial color="#fff" emissive="#fdd835" emissiveIntensity={0.3} />
+      </Sphere>
+      {/* Charging station */}
+      <group position={[1.2, 0, 0]}>
+        <Box args={[0.18, 0.9, 0.18]} position={[0, 0.45, 0]} castShadow>
+          <meshStandardMaterial color="#4caf50" emissive="#4caf50" emissiveIntensity={selected ? 0.35 : 0.05} />
+        </Box>
+        <Sphere args={[0.08, 12, 12]} position={[0, 0.95, 0]}>
+          <meshStandardMaterial color="#76ff03" emissive="#76ff03" emissiveIntensity={0.4} />
+        </Sphere>
+        {/* Charging status screen */}
+        <Box args={[0.12, 0.08, 0.01]} position={[0, 0.65, 0.1]}>
+          <meshStandardMaterial color="#00e676" emissive="#00e676" emissiveIntensity={0.5} />
+        </Box>
+        {/* Cable to car */}
+        <Cylinder args={[0.012, 0.012, 0.6, 6]} position={[-0.35, 0.4, 0]} rotation={[0, 0, -0.6]}>
+          <meshStandardMaterial color="#333" />
+        </Cylinder>
+      </group>
+      {/* Parking area ground */}
+      <Box args={[2.8, 0.005, 1.5]} position={[0.3, 0.003, 0]} receiveShadow>
+        <meshStandardMaterial color="#546e7a" roughness={0.9} />
+      </Box>
+      {/* Parking lines */}
+      <Box args={[0.04, 0.007, 1.0]} position={[-0.8, 0.006, 0]}>
+        <meshStandardMaterial color="#fdd835" />
+      </Box>
+      <Box args={[0.04, 0.007, 1.0]} position={[1.4, 0.006, 0]}>
+        <meshStandardMaterial color="#fdd835" />
+      </Box>
+    </group>
+  );
+}
+
+/* 7 ─ Floating Solar on Reservoir */
+function FloatingPanels({ selected }) {
+  const waterRef = useRef();
+  useFrame((state) => {
+    if (waterRef.current) {
+      waterRef.current.material.opacity = 0.65 + Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
+    }
+  });
+  const em = selected ? 0.25 : 0;
+  return (
+    <group position={[0, 0, 6]}>
+      {/* Water body */}
+      <Plane ref={waterRef} args={[4.5, 3.5]} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]} receiveShadow>
+        <meshStandardMaterial color="#1565c0" transparent opacity={0.7} metalness={0.4} roughness={0.3} emissive="#2980b9" emissiveIntensity={em * 0.4} />
+      </Plane>
+      {/* Floating panel arrays — 3x3 grid */}
+      {[
+        [-0.9, 0.06, -0.6], [-0.2, 0.06, -0.6], [0.5, 0.06, -0.6],
+        [-0.9, 0.06, 0.1],  [-0.2, 0.06, 0.1],  [0.5, 0.06, 0.1],
+        [-0.5, 0.06, 0.8],  [0.2, 0.06, 0.8],   [0.9, 0.06, 0.8],
+      ].map((pos, i) => (
+        <group key={i} position={pos}>
+          <Box args={[0.5, 0.02, 0.4]} castShadow>
+            <meshStandardMaterial color="#1a3a5c" metalness={0.85} roughness={0.15} emissive="#4dd0e1" emissiveIntensity={selected ? 0.5 : 0} />
+          </Box>
+          {/* Pontoon floats */}
+          <Cylinder args={[0.035, 0.035, 0.55, 6]} position={[0, -0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <meshStandardMaterial color="#ffa726" />
+          </Cylinder>
+        </group>
+      ))}
+      {/* Buoy markers */}
+      <Sphere args={[0.06, 10, 10]} position={[1.8, 0.06, 1.0]}>
+        <meshStandardMaterial color="#f44336" emissive="#f44336" emissiveIntensity={0.3} />
+      </Sphere>
+      <Sphere args={[0.06, 10, 10]} position={[-1.8, 0.06, -1.0]}>
+        <meshStandardMaterial color="#f44336" emissive="#f44336" emissiveIntensity={0.3} />
+      </Sphere>
+      {/* Shore edges */}
+      <Box args={[4.7, 0.08, 0.2]} position={[0, 0.01, -1.8]}>
+        <meshStandardMaterial color="#795548" roughness={0.9} />
+      </Box>
+      <Box args={[4.7, 0.08, 0.2]} position={[0, 0.01, 1.8]}>
+        <meshStandardMaterial color="#795548" roughness={0.9} />
+      </Box>
+      <Box args={[0.2, 0.08, 3.6]} position={[-2.35, 0.01, 0]}>
+        <meshStandardMaterial color="#795548" roughness={0.9} />
+      </Box>
+      <Box args={[0.2, 0.08, 3.6]} position={[2.35, 0.01, 0]}>
+        <meshStandardMaterial color="#795548" roughness={0.9} />
+      </Box>
+      {/* Small wooden jetty */}
+      <Box args={[0.3, 0.04, 1.0]} position={[1.8, 0.03, -1.3]}>
+        <meshStandardMaterial color="#8d6e63" />
+      </Box>
+    </group>
+  );
+}
+
+/* ─── MAIN DIORAMA SCENE ─── */
+function DioramaScene({ highlightType }) {
+  const [sunAngle, setSunAngle] = useState(Math.PI * 0.5);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime * 0.15;
+    setSunAngle(Math.PI * 0.5 + Math.sin(t) * Math.PI * 0.3);
+  });
+
+  const LABELS = {
+    residential: '🏠 Residential Solar',
+    space: '🚀 Space Solar',
+    agriculture: '🌾 Agri-Solar Pump',
+    portable: '🎒 Portable Solar',
+    bipv: '🏗️ BIPV Glass',
+    transport: '🚗 Solar EV',
+    floating: '💧 Floating Solar',
+  };
+
+  const POSITIONS = {
+    residential: [-5, 0, -3.5],
+    space: [0, 8, 0],
+    agriculture: [-5, 0, 3.5],
+    portable: [0, 0, -6],
+    bipv: [5, 0, -3.5],
+    transport: [5, 0, 3.5],
+    floating: [0, 0, 6],
+  };
+
+  const COLORS = {
+    residential: '#e67e22',
+    space: '#8e44ad',
+    agriculture: '#27ae60',
+    portable: '#3498db',
+    bipv: '#1abc9c',
+    transport: '#e74c3c',
+    floating: '#2980b9',
+  };
+
+  return (
+    <>
+      <DynamicSky sunAngle={sunAngle} />
+      <SunLight sunAngle={sunAngle} />
+      <ambientLight intensity={0.5} />
+      <hemisphereLight groundColor="#3e2723" skyColor="#87CEEB" intensity={0.55} />
+
+      {/* ── Ground ── */}
+      <Plane args={[35, 35]} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+        <meshStandardMaterial color="#4a7c3f" roughness={0.85} />
+      </Plane>
+
+      {/* ── Roads (cross pattern with roundabout) ── */}
+      <Box args={[20, 0.01, 1.2]} position={[0, 0.005, 0]} receiveShadow>
+        <meshStandardMaterial color="#616161" roughness={0.9} />
+      </Box>
+      <Box args={[1.2, 0.01, 20]} position={[0, 0.005, 0]} receiveShadow>
+        <meshStandardMaterial color="#616161" roughness={0.9} />
+      </Box>
+      {/* Center roundabout */}
+      <Cylinder args={[1.0, 1.0, 0.015, 32]} position={[0, 0.008, 0]}>
+        <meshStandardMaterial color="#616161" roughness={0.85} />
+      </Cylinder>
+      <Cylinder args={[0.6, 0.6, 0.03, 24]} position={[0, 0.02, 0]}>
+        <meshStandardMaterial color="#4caf50" roughness={0.8} />
+      </Cylinder>
+      {/* Mini fountain in roundabout */}
+      <Cylinder args={[0.1, 0.15, 0.15, 12]} position={[0, 0.1, 0]} castShadow>
+        <meshStandardMaterial color="#90a4ae" metalness={0.5} />
+      </Cylinder>
+      <Sphere args={[0.05, 12, 12]} position={[0, 0.2, 0]}>
+        <meshStandardMaterial color="#4fc3f7" emissive="#4fc3f7" emissiveIntensity={0.3} />
+      </Sphere>
+
+      {/* Road markings — dashed center lines */}
+      {[-8, -6, -4, -2, 2, 4, 6, 8].map((x, i) => (
+        <Box key={`hm${i}`} args={[0.8, 0.012, 0.06]} position={[x, 0.012, 0]}>
+          <meshStandardMaterial color="#fdd835" />
+        </Box>
+      ))}
+      {[-8, -6, -4, -2, 2, 4, 6, 8].map((z, i) => (
+        <Box key={`vm${i}`} args={[0.06, 0.012, 0.8]} position={[0, 0.012, z]}>
+          <meshStandardMaterial color="#fdd835" />
+        </Box>
+      ))}
+
+      {/* ── Trees scattered ── */}
+      <Tree position={[-2.5, 0, -2.2]} />
+      <Tree position={[2.5, 0, -2.2]} />
+      <Tree position={[-2.5, 0, 2.2]} />
+      <Tree position={[2.5, 0, 2.2]} />
+      <Tree position={[-7.5, 0, 0]} scale={1.2} />
+      <Tree position={[7.5, 0, 0]} scale={0.9} />
+      <Tree position={[-3.5, 0, -5.5]} scale={0.8} />
+      <Tree position={[3.5, 0, 5.5]} scale={1.1} />
+      <Tree position={[-8, 0, -7]} />
+      <Tree position={[8, 0, -7]} scale={0.9} />
+      <Tree position={[-8, 0, 7]} scale={1.1} />
+      <Tree position={[8, 0, 7]} />
+      <Tree position={[-3, 0, 7.5]} scale={0.7} />
+      <Tree position={[3, 0, -7.5]} scale={1.3} />
+
+      {/* ── Street lights ── */}
+      {[[-3, 0.6], [3, 0.6], [-3, -0.6], [3, -0.6]].map(([x, z], i) => (
+        <group key={`sl${i}`}>
+          <Cylinder args={[0.025, 0.025, 1.2, 6]} position={[x, 0.6, z]} castShadow>
+            <meshStandardMaterial color="#666" metalness={0.7} />
+          </Cylinder>
+          <Sphere args={[0.05, 8, 8]} position={[x, 1.25, z]}>
+            <meshStandardMaterial color="#fff9c4" emissive="#fdd835" emissiveIntensity={0.2} />
+          </Sphere>
+        </group>
+      ))}
+
+      {/* ═══ The 7 Installations ═══ */}
+      <ResidentialHouse selected={highlightType === 'residential'} />
+      <SpaceStation selected={highlightType === 'space'} />
+      <FarmArea selected={highlightType === 'agriculture'} />
+      <PortableHiker selected={highlightType === 'portable'} />
+      <BIPVSkyscraper selected={highlightType === 'bipv'} />
+      <TransportEV selected={highlightType === 'transport'} />
+      <FloatingPanels selected={highlightType === 'floating'} />
+
+      {/* ═══ Selection Beacon ═══ */}
+      {highlightType && POSITIONS[highlightType] && (
+        <SelectionBeacon
+          position={POSITIONS[highlightType]}
+          color={COLORS[highlightType]}
+          label={LABELS[highlightType]}
+        />
+      )}
+
+      <OrbitControls
+        enableZoom={true}
+        enablePan={true}
+        maxDistance={25}
+        minDistance={5}
+        autoRotate
+        autoRotateSpeed={0.4}
+        maxPolarAngle={Math.PI / 2.2}
+        minPolarAngle={Math.PI / 6}
+      />
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   QUIZ DATA & UI (unchanged from before)
+   ═══════════════════════════════════════════ */
+
 const SCENARIOS = [
   { id: 1, scenario: 'A family in Mumbai wants to reduce their monthly electricity bill and run their AC using the sun.', correct: 'residential', explanation: 'Rooftop residential solar is perfect for powering home appliances and reducing grid dependency!' },
   { id: 2, scenario: 'An astronaut on the International Space Station needs to power the station\'s systems 24/7.', correct: 'space', explanation: 'In space, there are no clouds or night — solar wings provide constant power to satellites and the ISS!' },
@@ -173,17 +747,15 @@ export default function SolarApplicationMatcher() {
   const allDone = Object.keys(answers).length === SCENARIOS.length;
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', backgroundColor: '#0a0a1a', color: 'white', fontFamily: 'sans-serif' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', backgroundColor: '#0f1923', color: 'white', fontFamily: 'sans-serif' }}>
       
-      {/* 3D Earth Scene */}
-      <div style={{ width: '320px', flexShrink: 0, position: 'relative' }}>
-        <Canvas camera={{ position: [0, 12, 18], fov: 45 }}>
-          <ambientLight intensity={0.15} />
-          <SolarSystemScene highlightType={current.correct} />
-          <OrbitControls enableZoom={true} enablePan={false} maxDistance={25} minDistance={5} autoRotate autoRotateSpeed={0.5} />
+      {/* 3D Diorama Viewer */}
+      <div style={{ width: '380px', flexShrink: 0, position: 'relative' }}>
+        <Canvas camera={{ position: [10, 12, 14], fov: 50 }} shadows>
+          <DioramaScene highlightType={current.correct} />
         </Canvas>
-        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#8b949e', textAlign: 'center', pointerEvents: 'none', background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
-          🌌 Drag to rotate view • Scroll to zoom
+        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#8b949e', textAlign: 'center', pointerEvents: 'none', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
+          🏙️ Drag to explore the city • Scroll to zoom
         </div>
       </div>
 
@@ -192,8 +764,8 @@ export default function SolarApplicationMatcher() {
         {/* Header */}
         <div style={{ padding: '14px 20px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
           <div>
-            <h3 style={{ margin: '0 0 4px 0', color: '#FFB800', fontSize: '18px' }}>🌍 Solar Application Matcher</h3>
-            <p style={{ margin: 0, color: '#8b949e', fontSize: '12px' }}>Match the scenario to the correct solar application!</p>
+            <h3 style={{ margin: '0 0 4px 0', color: '#FFB800', fontSize: '18px' }}>🏙️ Solar Application Matcher</h3>
+            <p style={{ margin: 0, color: '#8b949e', fontSize: '12px' }}>Match the scenario to the correct solar application in the city!</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '12px', color: '#8b949e' }}>Score: <strong style={{ color: '#4CAF50' }}>{totalCorrect}</strong>/{SCENARIOS.length}</span>
