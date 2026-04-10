@@ -1,149 +1,127 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { OrbitControls, Sphere, Box, Cylinder, Torus, Float, Stars, useTexture } from '@react-three/drei';
+import { OrbitControls, Sphere, Box, Cylinder, Torus, Float, Stars, useTexture, Sparkles, Trail } from '@react-three/drei';
 import * as THREE from 'three';
 
-/* ─── Realistic textured Earth globe ─── */
-function Earth({ highlightType }) {
-  const earthRef = useRef();
-  const cloudsRef = useRef();
+/* ─── Space Adventure Solar System Scene ─── */
+function RotatingSun() {
+  const sunRef = useRef();
+  useFrame((_, delta) => {
+    if (sunRef.current) sunRef.current.rotation.y += delta * 0.1;
+  });
 
+  return (
+    <group ref={sunRef}>
+      {/* Core */}
+      <Sphere args={[1.5, 64, 64]}>
+        <meshBasicMaterial color="#ffcc00" />
+      </Sphere>
+      {/* Corona / Outer glow */}
+      <Sphere args={[1.8, 64, 64]}>
+        <meshBasicMaterial color="#ffaa00" transparent opacity={0.3} side={THREE.BackSide} />
+      </Sphere>
+      <Sphere args={[2.3, 64, 64]}>
+        <meshBasicMaterial color="#ff5500" transparent opacity={0.1} side={THREE.BackSide} />
+      </Sphere>
+      {/* Solar flares / energy dust */}
+      <Sparkles count={400} scale={3.5} size={6} speed={0.4} color="#ff9900" opacity={0.6} />
+      {/* Sun Light Source */}
+      <pointLight position={[0, 0, 0]} intensity={6} color="#fff1ba" distance={100} decay={1.5} castShadow />
+    </group>
+  );
+}
+
+function Planet({ p, highlightType, earthTexture }) {
+  const orbitRef = useRef();
+  const groupRef = useRef();
+  const isSelected = highlightType === p.type;
+  
+  // Rotate the planet around the sun
+  useFrame((_, delta) => {
+    if (orbitRef.current) {
+      orbitRef.current.rotation.y += delta * p.speed;
+    }
+    if (groupRef.current) {
+      // Planet's own rotation
+      groupRef.current.rotation.y += delta * 0.5;
+    }
+  });
+
+  return (
+    <group ref={orbitRef}>
+      {/* Orbit Path */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[p.distance - 0.02, p.distance + 0.02, 128]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={isSelected ? 0.25 : 0.04} side={THREE.DoubleSide} />
+      </mesh>
+      
+      {/* Planet Mesh & Elements */}
+      <group position={[p.distance, 0, 0]} ref={groupRef}>
+        <Trail width={isSelected ? 1.5 : 0.5} color={p.color} length={isSelected ? 8 : 4} attenuation={(t) => t * t}>
+          <Float speed={2} floatIntensity={0.5}>
+            {/* Core planet */}
+            <Sphere args={[isSelected ? p.size * 1.5 : p.size, 64, 64]} castShadow receiveShadow>
+              {p.isEarth ? (
+                <meshStandardMaterial map={earthTexture} roughness={0.6} metalness={0.1} />
+              ) : (
+                <meshStandardMaterial color={p.color} roughness={0.7} metalness={0.2} />
+              )}
+            </Sphere>
+            
+            {/* Atmospheric glow */}
+            <Sphere args={[isSelected ? p.size * 1.6 : p.size * 1.1, 32, 32]}>
+              <meshStandardMaterial color={isSelected ? '#ffffff' : p.color} transparent opacity={isSelected ? 0.3 : 0.15} roughness={1} side={THREE.BackSide} />
+            </Sphere>
+
+            {/* Planetary Rings */}
+            {p.hasRings && (
+              <mesh rotation={[Math.PI / 2.5, 0, 0]} receiveShadow castShadow>
+                <ringGeometry args={[p.size * 1.6, p.size * 2.4, 64]} />
+                <meshStandardMaterial color={p.color} transparent opacity={0.6} side={THREE.DoubleSide} metalness={0.4} roughness={0.6} />
+              </mesh>
+            )}
+
+            {/* Highlight Selection Indicator */}
+            {isSelected && (
+              <Sphere args={[p.size * 1.8, 32, 32]}>
+                <meshBasicMaterial color={p.color} transparent opacity={0.2} wireframe />
+              </Sphere>
+            )}
+          </Float>
+        </Trail>
+      </group>
+    </group>
+  );
+}
+
+function SolarSystemScene({ highlightType }) {
   const earthTexture = useTexture('/images/earth-texture.png');
-
-  // Improve texture quality
+  
   useMemo(() => {
     earthTexture.minFilter = THREE.LinearFilter;
     earthTexture.magFilter = THREE.LinearFilter;
     earthTexture.colorSpace = THREE.SRGBColorSpace;
   }, [earthTexture]);
 
-  useFrame((_, delta) => {
-    if (earthRef.current) earthRef.current.rotation.y += delta * 0.08;
-    if (cloudsRef.current) cloudsRef.current.rotation.y += delta * 0.12;
-  });
-
-  // Marker positions
-  const markers = [
-    { type: 'residential', pos: [0, 1.8, 0.8], color: '#e67e22', label: '🏠' },
-    { type: 'space', pos: [0, 3.2, 0], color: '#8e44ad', label: '🚀' },
-    { type: 'agriculture', pos: [1.2, 0.5, 1.4], color: '#27ae60', label: '🌾' },
-    { type: 'portable', pos: [-1.5, 1, 0.8], color: '#3498db', label: '🎒' },
-    { type: 'bipv', pos: [0.8, 1.5, -1.2], color: '#1abc9c', label: '🏗️' },
-    { type: 'transport', pos: [-0.5, -0.3, 1.8], color: '#e74c3c', label: '🚗' },
-    { type: 'floating', pos: [-1, -1, 1.2], color: '#2980b9', label: '💧' },
+  const planets = [
+    { type: 'residential', color: '#e67e22', distance: 2.8, speed: 0.6, size: 0.2, hasRings: false },
+    { type: 'space', color: '#8e44ad', distance: 4.0, speed: 0.45, size: 0.25, hasRings: false },
+    { type: 'agriculture', color: '#27ae60', distance: 5.5, speed: 0.35, size: 0.35, hasRings: false, isEarth: true },
+    { type: 'portable', color: '#3498db', distance: 7.0, speed: 0.28, size: 0.2, hasRings: false },
+    { type: 'bipv', color: '#1abc9c', distance: 8.8, speed: 0.2, size: 0.45, hasRings: true },
+    { type: 'transport', color: '#e74c3c', distance: 10.5, speed: 0.15, size: 0.3, hasRings: false },
+    { type: 'floating', color: '#2980b9', distance: 12.5, speed: 0.1, size: 0.4, hasRings: false },
   ];
 
   return (
     <group>
-      {/* Stars in background */}
-      <Stars radius={50} depth={50} count={2000} factor={3} saturation={0} fade speed={1} />
-
-      {/* Sun light source */}
-      <pointLight position={[10, 5, 8]} intensity={2} color="#FFD700" distance={30} />
-      <pointLight position={[-5, -3, -5]} intensity={0.5} color="#4488ff" distance={20} />
-
-      {/* Earth with real texture */}
-      <group ref={earthRef}>
-        <Sphere args={[2, 64, 64]}>
-          <meshStandardMaterial
-            map={earthTexture}
-            roughness={0.65}
-            metalness={0.05}
-          />
-        </Sphere>
-      </group>
-
-      {/* Cloud layer */}
-      <group ref={cloudsRef}>
-        <Sphere args={[2.08, 32, 32]}>
-          <meshStandardMaterial 
-            color="#ffffff" 
-            transparent 
-            opacity={0.15}
-            roughness={1}
-          />
-        </Sphere>
-      </group>
-
-      {/* Atmosphere glow */}
-      <Sphere args={[2.15, 32, 32]}>
-        <meshBasicMaterial 
-          color="#4488ff" 
-          transparent 
-          opacity={0.08}
-          side={THREE.BackSide}
-        />
-      </Sphere>
-
-      {/* Outer atmosphere */}
-      <Sphere args={[2.4, 32, 32]}>
-        <meshBasicMaterial 
-          color="#66bbff" 
-          transparent 
-          opacity={0.04}
-          side={THREE.BackSide}
-        />
-      </Sphere>
-
-      {/* Location Markers */}
-      <group>
-        {markers.map((m) => (
-          <group key={m.type} position={m.pos}>
-            <Float speed={3} floatIntensity={0.3}>
-              <Sphere args={[highlightType === m.type ? 0.22 : 0.12, 16, 16]}>
-                <meshStandardMaterial
-                  color={m.color}
-                  emissive={m.color}
-                  emissiveIntensity={highlightType === m.type ? 2 : 0.5}
-                />
-              </Sphere>
-              {highlightType === m.type && (
-                <>
-                  <Torus args={[0.35, 0.03, 8, 32]} rotation={[Math.PI / 2, 0, 0]}>
-                    <meshBasicMaterial color={m.color} transparent opacity={0.7} />
-                  </Torus>
-                  <Torus args={[0.5, 0.02, 8, 32]} rotation={[Math.PI / 2, 0, 0]}>
-                    <meshBasicMaterial color={m.color} transparent opacity={0.3} />
-                  </Torus>
-                </>
-              )}
-            </Float>
-          </group>
-        ))}
-      </group>
-
-      {/* ISS / Satellite with solar panels */}
-      <Float speed={1.5} floatIntensity={0.3}>
-        <group position={[0, 3.5, 0]}>
-          {/* Main body */}
-          <Box args={[0.2, 0.1, 0.2]}>
-            <meshStandardMaterial color="#ccc" metalness={0.9} roughness={0.1} />
-          </Box>
-          {/* Solar wing left */}
-          <group position={[-0.5, 0, 0]}>
-            <Box args={[0.7, 0.02, 0.25]}>
-              <meshStandardMaterial color="#1a3b5c" metalness={0.7} roughness={0.2} />
-            </Box>
-            {/* Grid lines on panel */}
-            <Box args={[0.7, 0.021, 0.01]} position={[0, 0, 0]}>
-              <meshBasicMaterial color="#0f1a2a" />
-            </Box>
-          </group>
-          {/* Solar wing right */}
-          <group position={[0.5, 0, 0]}>
-            <Box args={[0.7, 0.02, 0.25]}>
-              <meshStandardMaterial color="#1a3b5c" metalness={0.7} roughness={0.2} />
-            </Box>
-            <Box args={[0.7, 0.021, 0.01]} position={[0, 0, 0]}>
-              <meshBasicMaterial color="#0f1a2a" />
-            </Box>
-          </group>
-          {/* Antenna */}
-          <Cylinder args={[0.005, 0.005, 0.15, 4]} position={[0.08, 0.1, 0]}>
-            <meshStandardMaterial color="#ddd" metalness={0.8} />
-          </Cylinder>
-        </group>
-      </Float>
+      <Stars radius={100} depth={50} count={5000} factor={5} saturation={0.5} fade speed={1.5} />
+      <Sparkles count={1500} scale={30} size={1.5} speed={0.2} color="#ffffff" opacity={0.3} />
+      <ambientLight intensity={0.03} />
+      <RotatingSun />
+      {planets.map(p => (
+        <Planet key={p.type} p={p} highlightType={highlightType} earthTexture={earthTexture} />
+      ))}
     </group>
   );
 }
@@ -199,13 +177,13 @@ export default function SolarApplicationMatcher() {
       
       {/* 3D Earth Scene */}
       <div style={{ width: '320px', flexShrink: 0, position: 'relative' }}>
-        <Canvas camera={{ position: [0, 2, 6], fov: 40 }}>
+        <Canvas camera={{ position: [0, 12, 18], fov: 45 }}>
           <ambientLight intensity={0.15} />
-          <Earth highlightType={current.correct} />
-          <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.3} />
+          <SolarSystemScene highlightType={current.correct} />
+          <OrbitControls enableZoom={true} enablePan={false} maxDistance={25} minDistance={5} autoRotate autoRotateSpeed={0.5} />
         </Canvas>
-        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#484f58', textAlign: 'center', pointerEvents: 'none' }}>
-          🌍 Drag to rotate the globe
+        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#8b949e', textAlign: 'center', pointerEvents: 'none', background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+          🌌 Drag to rotate view • Scroll to zoom
         </div>
       </div>
 

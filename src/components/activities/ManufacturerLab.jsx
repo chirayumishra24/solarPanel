@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Box, Cylinder, Float, RoundedBox, Sphere, Plane } from '@react-three/drei';
+import React, { useState, useRef, useMemo } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls, Box, Cylinder, Float, RoundedBox, Sphere, Plane, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
 /* ─── Enhanced 3D Factory Scene ─── */
-function FactoryBuilding({ color, scale = 1, position = [0, 0, 0], selected }) {
+function FactoryBuilding({ name, color, scale = 1, position = [0, 0, 0], selected }) {
   const groupRef = useRef();
   useFrame((_, delta) => {
     if (groupRef.current && selected) {
@@ -47,9 +47,12 @@ function FactoryBuilding({ color, scale = 1, position = [0, 0, 0], selected }) {
         <meshStandardMaterial color="#8b5a2b" />
       </Box>
       {/* Company sign */}
-      <Box args={[1.2, 0.25, 0.05]} position={[0, 1.3, 0.78]}>
-        <meshStandardMaterial color={color} metalness={0.6} emissive={color} emissiveIntensity={selected ? 0.5 : 0.1} />
+      <Box args={[1.5, 0.35, 0.05]} position={[0, 1.3, 0.78]}>
+        <meshStandardMaterial color={color} metalness={0.6} emissive={color} emissiveIntensity={selected ? 0.4 : 0.05} />
       </Box>
+      <Text position={[0, 1.3, 0.81]} fontSize={0.16} color="#ffffff" anchorX="center" anchorY="middle" outlineWidth={0.01} outlineColor="#000000">
+        {name}
+      </Text>
       {/* Glow ring when selected */}
       {selected && (
         <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -61,39 +64,111 @@ function FactoryBuilding({ color, scale = 1, position = [0, 0, 0], selected }) {
   );
 }
 
+/* ─── Sky background that changes with day/night ─── */
+function DynamicSky({ sunAngle }) {
+  const { scene } = useThree();
+  
+  useFrame(() => {
+    const sunHeight = Math.sin(sunAngle);
+    let r, g, b;
+    if (sunHeight > 0.15) { r = 0.53; g = 0.81; b = 0.92; }
+    else if (sunHeight > 0) {
+      const t = sunHeight / 0.15;
+      r = 0.53 * t + 0.95 * (1 - t); g = 0.81 * t + 0.5 * (1 - t); b = 0.92 * t + 0.2 * (1 - t);
+    } else if (sunHeight > -0.3) {
+      const t = (sunHeight + 0.3) / 0.3;
+      r = 0.95 * t + 0.08 * (1 - t); g = 0.5 * t + 0.08 * (1 - t); b = 0.2 * t + 0.18 * (1 - t);
+    } else { r = 0.05; g = 0.05; b = 0.12; }
+    scene.background = new THREE.Color(r, g, b);
+  });
+  return null;
+}
+
+/* ─── Sun Rays (visible light beams from the sun direction) ─── */
+function SunRays({ sunAngle }) {
+  const lightRef = useRef();
+  const sunHeight = Math.sin(sunAngle);
+  const isDay = sunHeight > -0.05;
+  const sunX = Math.cos(sunAngle) * 50;
+  const sunY = Math.sin(sunAngle) * 50;
+  const sunZ = -15;
+  
+  const intensity = isDay ? Math.max(0, sunHeight) * 2.5 : 0;
+  
+  const sunColor = useMemo(() => {
+    if (sunHeight > 0.3) return '#FFFFFF';
+    if (sunHeight > 0) return '#FFD700';
+    return '#FF8C00';
+  }, [sunHeight > 0.3, sunHeight > 0]);
+  
+  return (
+    <directionalLight
+      ref={lightRef}
+      position={[sunX, sunY, sunZ]}
+      intensity={intensity}
+      color={sunColor}
+      castShadow
+      shadow-mapSize-width={2048}
+      shadow-mapSize-height={2048}
+      shadow-camera-left={-20}
+      shadow-camera-right={20}
+      shadow-camera-top={20}
+      shadow-camera-bottom={-20}
+      shadow-camera-near={1}
+      shadow-camera-far={100}
+    />
+  );
+}
+
 function FactoryScene({ selectedMfg }) {
   const FACTORY_POSITIONS = [
-    { id: 'waaree', pos: [-3, 0, 0], color: '#e67e22' },
-    { id: 'adani', pos: [-1.5, 0, -2], color: '#2ecc71' },
-    { id: 'reliance', pos: [1.5, 0, -2], color: '#3498db' },
-    { id: 'vikram', pos: [3, 0, 0], color: '#9b59b6' },
-    { id: 'goldi', pos: [1.5, 0, 2], color: '#f1c40f' },
-    { id: 'tata', pos: [-1.5, 0, 2], color: '#1abc9c' },
+    { id: 'waaree', name: 'Waaree', pos: [-5, 0, 0], color: '#e67e22' },
+    { id: 'adani', name: 'Adani', pos: [-2.5, 0, -4], color: '#2ecc71' },
+    { id: 'reliance', name: 'Reliance', pos: [2.5, 0, -4], color: '#3498db' },
+    { id: 'vikram', name: 'Vikram', pos: [5, 0, 0], color: '#9b59b6' },
+    { id: 'goldi', name: 'Goldi', pos: [2.5, 0, 4], color: '#f1c40f' },
+    { id: 'tata', name: 'Tata', pos: [-2.5, 0, 4], color: '#1abc9c' },
   ];
+
+  const [sunAngle, setSunAngle] = useState(Math.PI * 0.5);
+
+  useFrame((state) => {
+    // Oscillate the sun between morning and late afternoon so it never gets dark
+    const t = state.clock.elapsedTime * 0.2;
+    setSunAngle(Math.PI * 0.5 + Math.sin(t) * Math.PI * 0.35);
+  });
+
+  const sunHeight = Math.sin(sunAngle);
+  const dayFactor = 1; // Always daytime for visibility
 
   return (
     <>
-      <ambientLight intensity={0.35} />
-      <directionalLight position={[8, 10, 5]} intensity={1.2} castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024} />
-      <pointLight position={[-5, 5, -5]} intensity={0.4} color="#FFB800" />
-      <hemisphereLight groundColor="#1a1a2e" skyColor="#334155" intensity={0.3} />
+      <DynamicSky sunAngle={sunAngle} />
+      <SunRays sunAngle={sunAngle} />
+      
+      <ambientLight intensity={0.6} />
+      <hemisphereLight 
+        groundColor="#2d3748" 
+        skyColor="#87CEEB" 
+        intensity={0.7} 
+      />
       
       {/* Ground with better material */}
-      <Plane args={[30, 30]} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+      <Plane args={[40, 40]} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
         <meshStandardMaterial color="#1e293b" roughness={0.8} />
       </Plane>
 
       {/* Road/paths between factories */}
-      <Box args={[12, 0.02, 0.6]} position={[0, 0, 0]} receiveShadow>
+      <Box args={[16, 0.02, 0.8]} position={[0, 0, 0]} receiveShadow>
         <meshStandardMaterial color="#374151" roughness={0.9} />
       </Box>
-      <Box args={[0.6, 0.02, 8]} position={[0, 0, 0]} receiveShadow>
+      <Box args={[0.8, 0.02, 12]} position={[0, 0, 0]} receiveShadow>
         <meshStandardMaterial color="#374151" roughness={0.9} />
       </Box>
-
       {FACTORY_POSITIONS.map(f => (
         <Float key={f.id} speed={selectedMfg === f.id ? 3 : 0} floatIntensity={selectedMfg === f.id ? 0.15 : 0}>
           <FactoryBuilding
+            name={f.name}
             color={f.color}
             position={f.pos}
             scale={selectedMfg === f.id ? 1.15 : 0.85}
@@ -102,7 +177,7 @@ function FactoryScene({ selectedMfg }) {
         </Float>
       ))}
       
-      <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.8} maxPolarAngle={Math.PI / 2.5} minPolarAngle={Math.PI / 4} />
+      <OrbitControls enableZoom={true} enablePan={true} maxDistance={20} minDistance={3} autoRotate autoRotateSpeed={0.8} maxPolarAngle={Math.PI / 2.5} minPolarAngle={Math.PI / 4} />
     </>
   );
 }
