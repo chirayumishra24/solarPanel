@@ -53,7 +53,7 @@ export function ActivityBlock({ block }) {
       </div>
 
       {/* Activity Container */}
-      <div className="content-card activity-card" style={{ padding: '0', overflow: 'hidden', height: '700px', backgroundColor: '#0d1117', borderRadius: '0 0 15px 15px', border: '1px solid #30363d', borderTop: 'none' }}>
+      <div className="content-card activity-card" style={{ padding: '0', overflow: 'hidden', minHeight: '500px', height: '70vh', maxHeight: '800px', backgroundColor: '#0d1117', borderRadius: '0 0 15px 15px', border: '1px solid #30363d', borderTop: 'none' }}>
         <Suspense fallback={<div style={{ color: 'white', padding: '2rem', textAlign: 'center' }}>Loading Interactive Activity...</div>}>
           {renderActivity()}
         </Suspense>

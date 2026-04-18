@@ -747,25 +747,25 @@ export default function SolarApplicationMatcher() {
   const allDone = Object.keys(answers).length === SCENARIOS.length;
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', backgroundColor: '#0f1923', color: 'white', fontFamily: 'sans-serif' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', backgroundColor: '#0f1923', color: 'white', fontFamily: 'sans-serif', flexWrap: 'wrap' }}>
       
       {/* 3D Diorama Viewer */}
-      <div style={{ width: '380px', flexShrink: 0, position: 'relative' }}>
+      <div style={{ flex: '1 1 280px', minHeight: '200px', maxHeight: '50vh', position: 'relative' }}>
         <Canvas camera={{ position: [10, 12, 14], fov: 50 }} shadows>
           <DioramaScene highlightType={current.correct} />
         </Canvas>
-        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', fontSize: '10px', color: '#8b949e', textAlign: 'center', pointerEvents: 'none', background: 'rgba(0,0,0,0.6)', padding: '4px 10px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
-          🏙️ Drag to explore the city • Scroll to zoom
+        <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', fontSize: '9px', color: '#8b949e', textAlign: 'center', pointerEvents: 'none', background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
+          🏙️ Drag to explore • Scroll to zoom
         </div>
       </div>
 
       {/* Quiz Panel */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderLeft: '2px solid #30363d' }}>
+      <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', borderLeft: '2px solid #30363d', minWidth: 0 }}>
         {/* Header */}
-        <div style={{ padding: '14px 20px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-          <div>
-            <h3 style={{ margin: '0 0 4px 0', color: '#FFB800', fontSize: '18px' }}>🏙️ Solar Application Matcher</h3>
-            <p style={{ margin: 0, color: '#8b949e', fontSize: '12px' }}>Match the scenario to the correct solar application in the city!</p>
+        <div style={{ padding: '10px 14px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, flexWrap: 'wrap', gap: '6px' }}>
+          <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+            <h3 style={{ margin: '0 0 2px 0', color: '#FFB800', fontSize: 'clamp(13px, 3vw, 18px)' }}>🏙️ Solar Application Matcher</h3>
+            <p style={{ margin: 0, color: '#8b949e', fontSize: 'clamp(10px, 2vw, 12px)' }}>Match the scenario to the correct solar application!</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '12px', color: '#8b949e' }}>Score: <strong style={{ color: '#4CAF50' }}>{totalCorrect}</strong>/{SCENARIOS.length}</span>
@@ -789,15 +789,15 @@ export default function SolarApplicationMatcher() {
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '0 20px 16px', gap: '12px', overflow: 'auto' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '0 12px 12px', gap: '10px', overflow: 'auto' }}>
           {/* Scenario */}
-          <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: '12px', padding: '16px', flexShrink: 0 }}>
-            <div style={{ fontSize: '10px', color: '#8b949e', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Scenario {currentIdx + 1} of {SCENARIOS.length}</div>
-            <p style={{ fontSize: '15px', lineHeight: '1.5', margin: 0 }}>{current.scenario}</p>
+          <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: '10px', padding: '12px', flexShrink: 0 }}>
+            <div style={{ fontSize: '10px', color: '#8b949e', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Scenario {currentIdx + 1} of {SCENARIOS.length}</div>
+            <p style={{ fontSize: 'clamp(12px, 3vw, 15px)', lineHeight: '1.5', margin: 0 }}>{current.scenario}</p>
           </div>
 
           {/* Answer Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '6px' }}>
             {APPLICATION_TYPES.map(type => {
               const selected = answers[current.id] === type.id;
               const isCorrectAnswer = current.correct === type.id;

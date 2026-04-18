@@ -759,10 +759,10 @@ export default function SubsidyCalculator() {
       }}
     >
       {/* Header */}
-      <div style={{ padding: '12px 20px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h3 style={{ margin: '0 0 4px 0', color: '#FFB800', fontSize: '18px' }}>💰 Subsidy Calculator</h3>
-          <p style={{ margin: 0, color: '#8b949e', fontSize: '12px' }}>See how much government subsidy YOU would get!</p>
+      <div style={{ padding: '10px 14px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+        <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+          <h3 style={{ margin: '0 0 3px 0', color: '#FFB800', fontSize: 'clamp(14px, 3.5vw, 18px)' }}>💰 Subsidy Calculator</h3>
+          <p style={{ margin: 0, color: '#8b949e', fontSize: 'clamp(10px, 2vw, 12px)' }}>See how much government subsidy YOU would get!</p>
         </div>
         {/* Fullscreen toggle button */}
         <button 
@@ -841,13 +841,14 @@ export default function SubsidyCalculator() {
           
           {/* Left: Inputs */}
           <div style={{ 
-            flex: '1 1 400px', 
-            padding: '14px 16px', 
+            flex: '1 1 280px', 
+            padding: '12px 14px', 
             display: 'flex', 
             flexDirection: 'column', 
             gap: '10px', 
             overflowY: 'auto',
             maxHeight: isFullscreen ? '350px' : '280px',
+            minWidth: 0,
           }}>
             
             {/* Capacity */}
@@ -918,14 +919,15 @@ export default function SubsidyCalculator() {
 
           {/* Right: Results */}
           <div style={{ 
-            width: '260px', 
+            flex: '0 0 auto',
+            width: '100%',
+            maxWidth: '260px',
             background: '#161b22', 
             borderLeft: '2px solid #30363d', 
-            padding: '14px', 
+            padding: '12px', 
             display: 'flex', 
             flexDirection: 'column', 
-            gap: '10px', 
-            flexShrink: 0, 
+            gap: '8px', 
             overflowY: 'auto',
             maxHeight: isFullscreen ? '350px' : '280px',
           }}>

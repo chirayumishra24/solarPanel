@@ -202,10 +202,10 @@ export default function BudgetSpaceOptimizer() {
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', color: 'white', fontFamily: 'sans-serif', position: 'relative' }}>
       
       {/* Header with Activity Aim */}
-      <div style={{ padding: '14px 20px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div>
-          <h3 style={{ margin: '0 0 4px 0', color: '#FFB800', fontSize: '18px' }}>🏠 Roof Space Optimizer</h3>
-          <p style={{ margin: 0, color: '#8b949e', fontSize: '13px' }}>
+      <div style={{ padding: '12px 16px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, flexWrap: 'wrap', gap: '8px' }}>
+        <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+          <h3 style={{ margin: '0 0 4px 0', color: '#FFB800', fontSize: 'clamp(14px, 3.5vw, 18px)' }}>🏠 Roof Space Optimizer</h3>
+          <p style={{ margin: 0, color: '#8b949e', fontSize: 'clamp(11px, 2.5vw, 13px)' }}>
             Place panels on the roof to hit {GOAL_POWER}kW within your ${MAX_BUDGET} budget!
           </p>
         </div>
@@ -229,11 +229,11 @@ export default function BudgetSpaceOptimizer() {
         </div>
       </div>
 
-      {/* Main area: 3D left + controls right */}
-      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+      {/* Main area: 3D left + controls right — stacks on mobile */}
+      <div style={{ flex: 1, display: 'flex', minHeight: 0, flexWrap: 'wrap' }}>
         
         {/* 3D Viewport */}
-        <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+        <div style={{ flex: '1 1 300px', position: 'relative', minWidth: 0, minHeight: '250px' }}>
           <Canvas camera={{ position: [0, 7, 9], fov: 40 }} style={{ background: '#0d1117' }}>
             <ambientLight intensity={0.4} />
             <directionalLight position={[8, 10, 5]} intensity={1.2} castShadow />
@@ -254,7 +254,7 @@ export default function BudgetSpaceOptimizer() {
         </div>
 
         {/* Control Panel */}
-        <div style={{ width: '280px', background: '#161b22', padding: '16px', borderLeft: '2px solid #30363d', display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', flexShrink: 0, zIndex: 5 }}>
+        <div style={{ width: '100%', maxWidth: '280px', flex: '0 0 auto', background: '#161b22', padding: '14px', borderLeft: '2px solid #30363d', display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', zIndex: 5 }}>
           
           {/* Goals Dashboard */}
           <div style={{ background: '#21262d', padding: '14px', borderRadius: '12px', border: '1px solid #30363d' }}>

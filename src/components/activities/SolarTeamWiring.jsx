@@ -161,10 +161,10 @@ export default function SolarTeamWiring() {
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', color: 'white', fontFamily: 'sans-serif', userSelect: 'none' }}>
       
       {/* Header */}
-      <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div>
-          <h3 style={{ margin: '0 0 6px 0', color: '#FFB800', fontSize: '18px' }}>⚡ Build the Solar Team</h3>
-          <p style={{ margin: 0, color: '#8b949e', fontSize: '13px' }}>
+      <div style={{ padding: '12px 16px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, flexWrap: 'wrap', gap: '8px' }}>
+        <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+          <h3 style={{ margin: '0 0 4px 0', color: '#FFB800', fontSize: 'clamp(14px, 3.5vw, 18px)' }}>⚡ Build the Solar Team</h3>
+          <p style={{ margin: 0, color: '#8b949e', fontSize: 'clamp(11px, 2.5vw, 13px)' }}>
             Click two components to wire them together. Connect them in the right order: Panel → Controller → Battery → Inverter → TV
           </p>
         </div>
@@ -228,7 +228,7 @@ export default function SolarTeamWiring() {
         </svg>
 
         {/* Component Nodes with Realistic Images */}
-        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', height: '100%', gap: '12px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', width: '100%', height: '100%', gap: '8px', flexWrap: 'wrap', padding: '10px' }}>
           {COMPONENTS.map((comp, idx) => {
             const isActive = activeNode === comp.id;
             const isCorrect = correctSet.has(comp.id);
@@ -240,8 +240,8 @@ export default function SolarTeamWiring() {
                 data-node-id={comp.id}
                 onClick={() => handleNodeClick(comp.id)}
                 style={{
-                  width: '120px',
-                  minHeight: '160px',
+                  width: 'clamp(80px, 18vw, 120px)',
+                  minHeight: 'clamp(120px, 25vw, 160px)',
                   backgroundColor: isActive ? '#30363d' : `${comp.color}22`,
                   borderRadius: '16px',
                   display: 'flex', flexDirection: 'column',
@@ -260,7 +260,7 @@ export default function SolarTeamWiring() {
                   zIndex: 2,
                   transition: 'all 0.25s ease',
                   transform: isActive ? 'scale(1.08)' : isTVOn ? 'scale(1.1)' : 'scale(1)',
-                  padding: '15px 8px',
+                  padding: '10px 6px',
                   position: 'relative',
                 }}
               >
@@ -277,7 +277,7 @@ export default function SolarTeamWiring() {
 
                 {/* Realistic Image */}
                 <div style={{ 
-                  width: '64px', height: '64px', marginBottom: '8px',
+                  width: 'clamp(40px, 12vw, 64px)', height: 'clamp(40px, 12vw, 64px)', marginBottom: '6px',
                   borderRadius: '10px', overflow: 'hidden',
                   background: 'rgba(255,255,255,0.08)',
                   border: '1px solid rgba(255,255,255,0.1)',
@@ -289,8 +289,8 @@ export default function SolarTeamWiring() {
                     transition: 'filter 0.3s'
                   }} />
                 </div>
-                <div style={{ textAlign: 'center', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>{comp.name}</div>
-                <div style={{ textAlign: 'center', fontSize: '10px', color: '#8b949e', fontStyle: 'italic' }}>{comp.role}</div>
+                <div style={{ textAlign: 'center', fontSize: 'clamp(9px, 2.5vw, 12px)', fontWeight: 'bold', marginBottom: '3px' }}>{comp.name}</div>
+                <div style={{ textAlign: 'center', fontSize: 'clamp(8px, 2vw, 10px)', color: '#8b949e', fontStyle: 'italic' }}>{comp.role}</div>
                 
                 {isTVOn && (
                   <div style={{ fontSize: '10px', marginTop: '6px', color: '#4CAF50', fontWeight: 'bold', animation: 'pulse 1s infinite' }}>

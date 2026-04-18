@@ -255,12 +255,12 @@ export default function SunTrackerSetup() {
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', color: 'white', position: 'relative' }}>
-      <div style={{ padding: '15px', background: 'rgba(0,0,0,0.8)', borderBottom: '2px solid #333' }}>
-        <h3 style={{ margin: '0 0 10px 0', color: '#FFB800' }}>☀️ Sun Tracker Sandbox</h3>
-        <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#ccc' }}>Adjust the time of day and align your solar panel to maximize energy production!</p>
+      <div style={{ padding: '12px 14px', background: 'rgba(0,0,0,0.8)', borderBottom: '2px solid #333', flexShrink: 0 }}>
+        <h3 style={{ margin: '0 0 8px 0', color: '#FFB800', fontSize: 'clamp(14px, 3.5vw, 18px)' }}>☀️ Sun Tracker Sandbox</h3>
+        <p style={{ margin: '0 0 12px 0', fontSize: 'clamp(11px, 2.5vw, 14px)', color: '#ccc' }}>Adjust the time of day and align your solar panel to maximize energy production!</p>
         
-        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '200px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 160px', minWidth: '0' }}>
             <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
               <span>Time of Day: {Math.floor(timeOfDay)}:00</span>
             </label>
@@ -271,7 +271,7 @@ export default function SunTrackerSetup() {
             />
           </div>
           
-          <div style={{ flex: 1, minWidth: '200px' }}>
+          <div style={{ flex: '1 1 160px', minWidth: '0' }}>
             <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
               <span>Panel Tilt (Up/Down): <strong style={{ color: '#4CAF50' }}>{tiltDeg}°</strong></span>
               <span style={{ color: '#8b949e', fontSize: '10px' }}>0° = flat, 90° = vertical</span>
@@ -283,7 +283,7 @@ export default function SunTrackerSetup() {
             />
           </div>
           
-          <div style={{ flex: 1, minWidth: '200px' }}>
+          <div style={{ flex: '1 1 160px', minWidth: '0' }}>
             <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
               <span>Panel Pan (Left/Right): <strong style={{ color: '#58a6ff' }}>{panDeg > 0 ? `+${panDeg}` : panDeg}°</strong></span>
               <span style={{ color: '#8b949e', fontSize: '10px' }}>Azimuth</span>
@@ -305,9 +305,9 @@ export default function SunTrackerSetup() {
         
         {/* Efficiency Meter HUD */}
         <div style={{ 
-          position: 'absolute', bottom: '20px', right: '20px', 
-          background: 'rgba(0,0,0,0.7)', padding: '15px', borderRadius: '10px',
-          border: '1px solid #444', width: '200px'
+          position: 'absolute', bottom: '12px', right: '12px', 
+          background: 'rgba(0,0,0,0.7)', padding: '12px', borderRadius: '10px',
+          border: '1px solid #444', width: 'clamp(140px, 30vw, 200px)'
         }}>
           <div style={{ fontSize: '14px', marginBottom: '8px', fontWeight: 'bold' }}>Energy Output</div>
           <div style={{ height: '20px', background: '#222', borderRadius: '10px', overflow: 'hidden' }}>
@@ -328,9 +328,9 @@ export default function SunTrackerSetup() {
 
         {/* Angle Info HUD */}
         <div style={{
-          position: 'absolute', bottom: '20px', left: '20px',
-          background: 'rgba(0,0,0,0.75)', padding: '14px', borderRadius: '12px',
-          border: '1px solid #30363d', width: '230px', backdropFilter: 'blur(8px)'
+          position: 'absolute', bottom: '12px', left: '12px',
+          background: 'rgba(0,0,0,0.75)', padding: '10px', borderRadius: '10px',
+          border: '1px solid #30363d', width: 'clamp(160px, 35vw, 230px)', backdropFilter: 'blur(8px)'
         }}>
           <div 
             onClick={() => setShowAngleInfo(!showAngleInfo)}

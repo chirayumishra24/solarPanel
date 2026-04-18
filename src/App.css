@@ -340,10 +340,9 @@
   width: 100%;
   background: #ffffff;
   border-bottom: 4px solid #111;
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
   z-index: 20;
+  flex-shrink: 0;
 }
 
 .chapter-progress-bar-fill {
@@ -362,14 +361,29 @@
   flex: 1;
   overflow-y: auto;
   pointer-events: auto;
-  /* Enable scrolling */
+  padding: 1.5rem 2%;
+}
 
-  /* Flex layout to put HUD on left, content on right */
+.chapter-scroll-content {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.chapter-main-title {
+  width: 100%;
+  max-width: min(800px, 100%);
+  margin-bottom: 2rem;
+}
+
+.desktop-split {
+  display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: flex-start;
-  padding: 1.5rem 2%;
   gap: 3rem;
+  width: 100%;
 }
 
 /* Custom scrollbar for overlay */
@@ -391,7 +405,7 @@
 }
 
 .chapter-content-wrapper {
-  max-width: 800px;
+  max-width: min(800px, 100%);
   flex: 1;
   width: 100%;
   margin-right: 0;
@@ -536,6 +550,8 @@
 
 .text-card p {
   margin: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .video-card {
@@ -748,13 +764,13 @@
   font-size: 1.4rem;
   font-weight: 900;
   text-transform: uppercase;
-  color: #e53e3e;
-  -webkit-text-stroke: 1.5px #111;
-  text-shadow: 3px 3px 0 #111;
+  color: #ef4444;
+  -webkit-text-stroke: 0.5px #111;
+  text-shadow: 2px 2px 0 #111;
   margin-bottom: 0.75rem;
   margin-top: -0.5rem;
   letter-spacing: 1px;
-  line-height: 1.1;
+  line-height: 1.2;
   font-family: inherit;
 }
 
@@ -766,136 +782,26 @@
   text-align: left;
 }
 
-/* ── Responsive Overrides ── */
-@media (max-width: 1024px) {
-  .chapter-scroll-area {
-    padding: 1rem 2%;
-    gap: 1.5rem;
-  }
-
-  .hud-column {
-    width: 300px;
-    top: 1rem;
-  }
-
-  .chapter-content-wrapper {
-    margin-right: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .chapter-scroll-area {
-    flex-direction: column;
-    /* Stacks HUD on top of Chapter Content! */
-    align-items: stretch;
-    /* Stretch full width */
-    padding: 1.5rem 1rem;
-    gap: 1rem;
-  }
-
-  .hud-column {
-    position: relative;
-    /* Scrolls naturally with the text! */
-    top: 0;
-    width: 100%;
-    max-width: 100%;
-    margin-bottom: 2rem;
-  }
-
-  .chapter-content-wrapper {
-    margin-right: 0;
-    max-width: 100%;
-  }
-
-  .heading-card.level-1 {
-    margin-bottom: 15vh;
-    /* Less huge space on mobile start */
-  }
-
-  .heading-card.level-1 h1 {
-    font-size: 2.25rem;
-    -webkit-text-stroke: 2px #111;
-  }
-
-  .comic-panel-card {
-    margin-top: 3.5rem;
-    padding: 2rem 1rem 1rem;
-  }
-}
-
-/* ── Responsive Overrides ── */
-@media (max-width: 1024px) {
-  .chapter-scroll-area {
-    padding: 1rem 2%;
-    gap: 1.5rem;
-  }
-
-  .hud-column {
-    width: 300px;
-    top: 1rem;
-  }
-
-  .chapter-content-wrapper {
-    margin-right: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .chapter-scroll-area {
-    flex-direction: column;
-    /* Stacks HUD on top of Chapter Content! */
-    align-items: stretch;
-    /* Stretch full width */
-    padding: 1.5rem 1rem;
-    gap: 1rem;
-  }
-
-  .hud-column {
-    position: relative;
-    /* Scrolls naturally with the text! */
-    top: 0;
-    width: 100%;
-    max-width: 100%;
-    margin-bottom: 2rem;
-  }
-
-  .chapter-content-wrapper {
-    margin-right: 0;
-    max-width: 100%;
-  }
-
-  .heading-card.level-1 {
-    margin-bottom: 15vh;
-    /* Less huge space on mobile start */
-  }
-
-  .heading-card.level-1 h1 {
-    font-size: 2.25rem;
-    -webkit-text-stroke: 2px #111;
-  }
-
-  .comic-panel-card {
-    margin-top: 3.5rem;
-    padding: 2rem 1rem 1rem;
-  }
-}
+/* ── Responsive Overrides (base — detailed in responsive.css) ── */
 
 /* ── Audio Player Styles ── */
 .audio-container {
   position: relative;
   background: url('/gif/Subtitle (8).gif') center center no-repeat;
-  background-size: contain;
+  background-size: cover;
   border-radius: 16px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
   margin: 1.5rem auto;
-  width: 90%;
-  max-width: 900px;
-  aspect-ratio: 21 / 14;
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 16 / 9;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   padding: 1rem;
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border: 4px solid #111;
+  overflow: hidden;
 }
 
 /* Modern styled audio */

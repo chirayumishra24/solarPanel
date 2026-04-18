@@ -225,19 +225,19 @@ export default function ManufacturerLab() {
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', color: 'white', fontFamily: 'sans-serif' }}>
       
       {/* Header */}
-      <div style={{ padding: '12px 20px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <h3 style={{ margin: 0, color: '#FFB800', fontSize: '18px' }}>🔬 Manufacturer Comparison Lab</h3>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => setMode('explore')} style={{ padding: '5px 12px', background: mode === 'explore' ? '#FFB800' : '#21262d', color: mode === 'explore' ? '#000' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>📊 Explore</button>
-          <button onClick={() => setMode('challenge')} style={{ padding: '5px 12px', background: mode === 'challenge' ? '#FFB800' : '#21262d', color: mode === 'challenge' ? '#000' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>🎯 Challenge</button>
+      <div style={{ padding: '10px 14px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, flexWrap: 'wrap', gap: '6px' }}>
+        <h3 style={{ margin: 0, color: '#FFB800', fontSize: 'clamp(13px, 3.5vw, 18px)', flex: '1 1 auto' }}>🔬 Manufacturer Lab</h3>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <button onClick={() => setMode('explore')} style={{ padding: '5px 12px', background: mode === 'explore' ? '#FFB800' : '#21262d', color: mode === 'explore' ? '#000' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', minHeight: '36px' }}>📊 Explore</button>
+          <button onClick={() => setMode('challenge')} style={{ padding: '5px 12px', background: mode === 'challenge' ? '#FFB800' : '#21262d', color: mode === 'challenge' ? '#000' : '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', minHeight: '36px' }}>🎯 Challenge</button>
         </div>
       </div>
 
-      {/* Main: 3D left + Panel right */}
-      <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+      {/* Main: 3D left + Panel right — stacks on mobile */}
+      <div style={{ flex: 1, display: 'flex', minHeight: 0, flexWrap: 'wrap' }}>
         
         {/* 3D Factory Scene */}
-        <div style={{ width: '340px', flexShrink: 0, position: 'relative' }}>
+        <div style={{ flex: '1 1 260px', minHeight: '200px', maxHeight: '50vh', position: 'relative' }}>
           <Canvas camera={{ position: [0, 6, 8], fov: 45 }} shadows>
             <FactoryScene selectedMfg={mode === 'explore' ? selectedCard : (challengeAnswers[currentChallenge?.id] || null)} />
           </Canvas>
@@ -267,7 +267,7 @@ export default function ManufacturerLab() {
         </div>
 
         {/* Right Panel */}
-        <div style={{ flex: 1, borderLeft: '2px solid #30363d', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ flex: '1 1 300px', borderLeft: '2px solid #30363d', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
           {mode === 'explore' ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '12px 16px', gap: '10px', overflow: 'auto' }}>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
@@ -275,7 +275,7 @@ export default function ManufacturerLab() {
                 <button onClick={() => setSortBy('capacityNum')} style={{ padding: '3px 10px', background: sortBy === 'capacityNum' ? '#238636' : '#21262d', color: '#fff', border: '1px solid #30363d', borderRadius: '5px', cursor: 'pointer', fontSize: '10px' }}>Capacity</button>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '8px' }}>
                 {sorted.map((mfg) => (
                   <div key={mfg.id} onClick={() => setSelectedCard(mfg.id)}
                     style={{ background: selectedCard === mfg.id ? `${mfg.color}22` : '#161b22', border: `2px solid ${selectedCard === mfg.id ? mfg.color : '#30363d'}`, borderRadius: '10px', padding: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
@@ -317,7 +317,7 @@ export default function ManufacturerLab() {
               <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: '10px', padding: '14px', flexShrink: 0 }}>
                 <p style={{ fontSize: '14px', margin: 0, lineHeight: '1.4' }}>{currentChallenge.question}</p>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '6px' }}>
                 {MANUFACTURERS.map(mfg => {
                   const answered = challengeAnswers[currentChallenge.id] !== undefined;
                   const selected = challengeAnswers[currentChallenge.id] === mfg.id;

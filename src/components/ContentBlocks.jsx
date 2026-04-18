@@ -12,10 +12,32 @@ const CHAPTER_AUDIO_SOURCES = {
   'module2-chapter3': '/audio/m2ch3.mp3',
 };
 
+export function ChapterHeader({ block, chapterId }) {
+  const audioSrc = chapterId ? CHAPTER_AUDIO_SOURCES[chapterId] ?? null : null;
+  return (
+    <React.Fragment>
+      <HeadingBlock block={block} />
+      {audioSrc && (
+        <div className="audio-container" style={{ marginTop: '1rem' }}>
+          <audio
+            key={audioSrc}
+            controls
+            preload="auto"
+            controlsList="nodownload"
+            onContextMenu={(e) => e.preventDefault()}
+            onError={(e) => console.error('Audio error:', e.target.error)}
+          >
+            <source src={audioSrc} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      )}
+    </React.Fragment>
+  );
+}
+
 export function ContentBlocks({ blocks, chapterId }) {
   if (!blocks || !blocks.length) return null;
-
-  const audioSrc = chapterId ? CHAPTER_AUDIO_SOURCES[chapterId] ?? null : null;
 
   return (
     <div className="content-blocks">
@@ -33,29 +55,6 @@ export function ContentBlocks({ blocks, chapterId }) {
           case 'activity': renderedBlock = <ActivityBlock key={index} block={block} />; break;
           default: renderedBlock = null;
         }
-
-        // Inject the audio player immediately after the level 1 heading
-        if (block.type === 'heading' && block.level === 1 && audioSrc) {
-          return (
-            <React.Fragment key={index}>
-              {renderedBlock}
-              <div className="audio-container">
-                <audio
-                  key={audioSrc}
-                  controls
-                  preload="auto"
-                  controlsList="nodownload"
-                  onContextMenu={(e) => e.preventDefault()}
-                  onError={(e) => console.error('Audio error:', e.target.error)}
-                >
-                  <source src={audioSrc} type="audio/mpeg" />
-                  Your browser does not support the audio element.
-                </audio>
-              </div>
-            </React.Fragment>
-          );
-        }
-
         return renderedBlock;
       })}
     </div>
@@ -90,7 +89,7 @@ function VideoBlock({ block }) {
 function ImageBlock({ block }) {
   return (
     <div className={`content-card image-card ${block.className || ''}`} style={{ textAlign: 'center', ...block.containerStyle }}>
-      <img src={block.url} alt={block.alt || 'Course illustration'} style={{ margin: '0 auto', ...block.imageStyle }} />
+      <img src={block.url} alt={block.alt || 'Course illustration'} style={{ width: '100%', height: 'auto', margin: '0 auto', display: 'block', ...block.imageStyle }} />
     </div>
   );
 }
@@ -175,9 +174,9 @@ function CarouselBlock({ block }) {
     <div className="content-card carousel-card" style={{ position: 'relative', overflow: 'hidden', padding: 0 }}>
       <button
         onClick={handlePrev}
-        style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.6)', borderRadius: '50%', padding: '8px', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ position: 'absolute', top: '50%', left: '8px', transform: 'translateY(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.6)', borderRadius: '50%', padding: '8px', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '40px', minHeight: '40px' }}
       >
-        <ChevronLeft size={24} />
+        <ChevronLeft size={22} />
       </button>
 
       <div style={{ padding: '0', margin: 0, display: 'flex', transition: 'transform 0.3s ease', transform: `translateX(-${currentIndex * 100}%)` }}>
@@ -186,31 +185,32 @@ function CarouselBlock({ block }) {
             key={i}
             src={img.url}
             alt={img.alt || 'Carousel image'}
-            style={{ width: '100%', flexShrink: 0, objectFit: 'contain', maxHeight: '500px', display: 'block', background: 'rgba(0,0,0,0.1)' }}
+            style={{ width: '100%', flexShrink: 0, objectFit: 'contain', height: 'auto', maxHeight: '60vh', display: 'block', background: 'rgba(0,0,0,0.1)' }}
           />
         ))}
       </div>
 
       <button
         onClick={handleNext}
-        style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.6)', borderRadius: '50%', padding: '8px', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={{ position: 'absolute', top: '50%', right: '8px', transform: 'translateY(-50%)', zIndex: 10, background: 'rgba(0,0,0,0.6)', borderRadius: '50%', padding: '8px', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '40px', minHeight: '40px' }}
       >
-        <ChevronRight size={24} />
+        <ChevronRight size={22} />
       </button>
 
-      <div style={{ position: 'absolute', bottom: '15px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 10 }}>
+      <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 10 }}>
         {block.images.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrentIndex(i)}
             style={{
-              width: '10px',
-              height: '10px',
+              width: '12px',
+              height: '12px',
               borderRadius: '50%',
               background: i === currentIndex ? 'white' : 'rgba(255,255,255,0.4)',
               border: 'none',
               cursor: 'pointer',
-              padding: 0
+              padding: 0,
+              minWidth: '12px'
             }}
             aria-label={`Go to slide ${i + 1}`}
           />

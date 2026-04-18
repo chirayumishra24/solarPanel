@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useContext } from 'react';
-import { ContentBlocks } from './ContentBlocks';
+import { ContentBlocks, ChapterHeader } from './ContentBlocks';
 import { ThemeContext } from './SolarCourseBackground';
 import { SolarHUD } from './SolarHUD';
 
@@ -26,6 +26,10 @@ export function ChapterLayout({ chapterData }) {
 
   if (!chapterData) return null;
 
+  const hasTitleBlock = chapterData.blocks[0]?.type === 'heading' && chapterData.blocks[0]?.level === 1;
+  const titleBlock = hasTitleBlock ? chapterData.blocks[0] : null;
+  const restBlocks = hasTitleBlock ? chapterData.blocks.slice(1) : chapterData.blocks;
+
   // Add the theme class. For similar lighting phases, group them via CSS or mapping.
   // dayPhase will be: night, twilight, morning, day, afternoon, evening
   const themeClass = `theme-${dayPhase || 'night'}`;
@@ -47,10 +51,20 @@ export function ChapterLayout({ chapterData }) {
         ref={scrollRef}
         onScroll={handleScroll}
       >
-        <SolarHUD />
-        
-        <div className="chapter-content-wrapper">
-          <ContentBlocks blocks={chapterData.blocks} chapterId={chapterData.id} />
+        <div className="chapter-scroll-content">
+          {/* Main Chapter Title and Audio rendered explicitly at the top */}
+          {titleBlock && (
+            <div className="chapter-main-title">
+              <ChapterHeader block={titleBlock} chapterId={chapterData.id} />
+            </div>
+          )}
+
+          <div className="desktop-split">
+            <SolarHUD />
+            <div className="chapter-content-wrapper">
+              <ContentBlocks blocks={restBlocks} chapterId={chapterData.id} />
+            </div>
+          </div>
         </div>
       </div>
     </div>

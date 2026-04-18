@@ -142,7 +142,7 @@ export function CustomVideoPlayer({ src, title }) {
   // Fallback for youtube or external links that can't be played in HTML5 video
   if (src && src.includes('youtube.com')) {
     return (
-      <div className="video-wrapper" style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
+      <div className="video-wrapper" style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '10px' }}>
         <iframe
           src={src}
           title={title || 'YouTube Video'}
@@ -185,7 +185,8 @@ export function CustomVideoPlayer({ src, title }) {
         onEnded={() => setIsPlaying(false)}
         style={{
           width: '100%',
-          maxHeight: isFullscreen ? '100vh' : '500px',
+          maxHeight: isFullscreen ? '100vh' : 'none',
+          aspectRatio: isFullscreen ? 'auto' : '16 / 9',
           objectFit: 'contain',
           cursor: 'pointer'
         }}
