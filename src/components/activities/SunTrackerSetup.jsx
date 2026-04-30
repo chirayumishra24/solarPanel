@@ -22,7 +22,7 @@ function AngleArc({ panelTilt }) {
 
   return (
     <group position={[0, 4.5, 1.5]}>
-      {/* Vertical reference line (0° = flat) */}
+      {/* Vertical reference line */}
       <Line
         points={[[0, 0, 0], [0, 0, 1.3]]}
         color="#FFB800"
@@ -85,7 +85,6 @@ function House({ panelTilt, panelPan, sunPosition, setEfficiency }) {
           </Box>
         </group>
       </group>
-      {/* Angle arc visualization */}
       <AngleArc panelTilt={panelTilt} />
     </group>
   );
@@ -123,65 +122,6 @@ function SunTrackerScene({ timeOfDay, panelTilt, panelPan, setEfficiency }) {
   );
 }
 
-/* ─── Solar Man Overlay Component ─── */
-function SolarManOverlay({ title, children, onClose, closeLabel = 'Continue' }) {
-  return (
-    <div style={{
-      position: 'absolute', inset: 0, zIndex: 50,
-      background: 'rgba(0,0,0,0.85)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '20px',
-      animation: 'fadeIn 0.4s ease'
-    }}>
-      <div style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        borderRadius: '20px', border: '3px solid #FFB800',
-        maxWidth: '520px', width: '100%', padding: '28px',
-        boxShadow: '0 0 60px rgba(255,184,0,0.25)',
-        animation: 'popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275)'
-      }}>
-        {/* Solar Man Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-          <div style={{
-            width: '72px', height: '72px', borderRadius: '50%',
-            border: '3px solid #FFB800', overflow: 'hidden', flexShrink: 0,
-            background: 'linear-gradient(135deg, #FFB800, #FF6B00)',
-            boxShadow: '0 0 20px rgba(255,184,0,0.4)'
-          }}>
-            <img src="/images/solar-man.png" alt="Solar Man" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-          <div>
-            <div style={{ fontSize: '10px', color: '#FFB800', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px' }}>Solar Man Says</div>
-            <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#fff' }}>{title}</div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div style={{ color: '#e2e8f0', fontSize: '14px', lineHeight: '1.6' }}>
-          {children}
-        </div>
-
-        {/* Close Button */}
-        {onClose && (
-          <button onClick={onClose} style={{
-            display: 'block', width: '100%', marginTop: '20px',
-            padding: '14px', border: 'none', borderRadius: '12px',
-            background: 'linear-gradient(135deg, #FFB800 0%, #FF8A00 100%)',
-            color: '#000', fontWeight: 'bold', fontSize: '16px',
-            cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s',
-            boxShadow: '0 4px 15px rgba(255,184,0,0.3)',
-          }}
-            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
-            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            {closeLabel}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
 /* ─── Quiz Questions ─── */
 const QUIZ_QUESTIONS = [
   {
@@ -197,10 +137,10 @@ const QUIZ_QUESTIONS = [
     explanation: 'When the panel faces away from the sun, it cannot absorb photons, so energy output drops to nearly 0%. Alignment is crucial!'
   },
   {
-    question: 'What is the ideal tilt angle for a solar panel in India (~28°N latitude)?',
-    options: ['0° (flat)', 'Equal to latitude (~28°)', '90° (vertical)', '180° (upside down)'],
+    question: 'What is the ideal tilt angle for a solar panel in India (~28\u00b0N latitude)?',
+    options: ['0\u00b0 (flat)', 'Equal to latitude (~28\u00b0)', '90\u00b0 (vertical)', '180\u00b0 (upside down)'],
     correct: 1,
-    explanation: 'The optimal tilt angle for a fixed solar panel is roughly equal to the location\'s latitude. For most of India (~28°N), a tilt of about 28° from horizontal gives the best year-round output!'
+    explanation: 'The optimal tilt angle for a fixed solar panel is roughly equal to the location\'s latitude. For most of India (~28\u00b0N), a tilt of about 28\u00b0 from horizontal gives the best year-round output!'
   }
 ];
 
@@ -253,278 +193,290 @@ export default function SunTrackerSetup() {
   const isCorrect = quizAnswers[quizIdx] === currentQ.correct;
   const quizScore = Object.entries(quizAnswers).filter(([idx, ans]) => QUIZ_QUESTIONS[parseInt(idx)].correct === ans).length;
 
-  return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', color: 'white', position: 'relative' }}>
-      <div style={{ padding: '12px 14px', background: 'rgba(0,0,0,0.8)', borderBottom: '2px solid #333', flexShrink: 0 }}>
-        <h3 style={{ margin: '0 0 8px 0', color: '#FFB800', fontSize: 'clamp(14px, 3.5vw, 18px)' }}>☀️ Sun Tracker Sandbox</h3>
-        <p style={{ margin: '0 0 12px 0', fontSize: 'clamp(11px, 2.5vw, 14px)', color: '#ccc' }}>Adjust the time of day and align your solar panel to maximize energy production!</p>
-        
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 160px', minWidth: '0' }}>
-            <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
-              <span>Time of Day: {Math.floor(timeOfDay)}:00</span>
-            </label>
-            <input 
-              type="range" min="6" max="18" step="0.5" 
-              value={timeOfDay} onChange={(e) => setTimeOfDay(parseFloat(e.target.value))}
-              style={{ width: '100%' }}
-            />
-          </div>
-          
-          <div style={{ flex: '1 1 160px', minWidth: '0' }}>
-            <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
-              <span>Panel Tilt (Up/Down): <strong style={{ color: '#4CAF50' }}>{tiltDeg}°</strong></span>
-              <span style={{ color: '#8b949e', fontSize: '10px' }}>0° = flat, 90° = vertical</span>
-            </label>
-            <input 
-              type="range" min="0" max={Math.PI / 2} step="0.01" 
-              value={panelTilt} onChange={(e) => setPanelTilt(parseFloat(e.target.value))}
-              style={{ width: '100%' }}
-            />
-          </div>
-          
-          <div style={{ flex: '1 1 160px', minWidth: '0' }}>
-            <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
-              <span>Panel Pan (Left/Right): <strong style={{ color: '#58a6ff' }}>{panDeg > 0 ? `+${panDeg}` : panDeg}°</strong></span>
-              <span style={{ color: '#8b949e', fontSize: '10px' }}>Azimuth</span>
-            </label>
-            <input 
-              type="range" min={-Math.PI/2} max={Math.PI/2} step="0.01" 
-              value={panelPan} onChange={(e) => setPanelPan(parseFloat(e.target.value))}
-              style={{ width: '100%' }}
-            />
-          </div>
-        </div>
-      </div>
-      
-      <div style={{ position: 'relative', flex: 1 }}>
-        <Canvas shadows camera={{ position: [8, 5, 10], fov: 45 }}>
-          <color attach="background" args={['#87CEEB']} />
-          <SunTrackerScene timeOfDay={timeOfDay} panelTilt={panelTilt} panelPan={panelPan} setEfficiency={setEfficiency} />
-        </Canvas>
-        
-        {/* Efficiency Meter HUD */}
-        <div style={{ 
-          position: 'absolute', bottom: '12px', right: '12px', 
-          background: 'rgba(0,0,0,0.7)', padding: '12px', borderRadius: '10px',
-          border: '1px solid #444', width: 'clamp(140px, 30vw, 200px)'
-        }}>
-          <div style={{ fontSize: '14px', marginBottom: '8px', fontWeight: 'bold' }}>Energy Output</div>
-          <div style={{ height: '20px', background: '#222', borderRadius: '10px', overflow: 'hidden' }}>
-            <div style={{ 
-              height: '100%', 
-              width: `${Math.min(100, efficiency)}%`, 
-              background: efficiency > 80 ? '#4CAF50' : efficiency > 40 ? '#FFEB3B' : '#F44336',
-              transition: 'width 0.2s, background 0.2s'
-            }} />
-          </div>
-          <div style={{ textAlign: 'right', marginTop: '5px', fontSize: '18px', fontWeight: 'bold', color: efficiency > 80 ? '#4CAF50' : 'white' }}>
-            {efficiency.toFixed(0)}%
-          </div>
-          <div style={{ fontSize: '10px', color: '#8b949e', marginTop: '4px' }}>
-            Peak: {peakEfficiency.toFixed(0)}%
-          </div>
-        </div>
+  const isActivityBlocked = showStartOverlay || showQuiz || showCongrats;
 
-        {/* Angle Info HUD */}
-        <div style={{
-          position: 'absolute', bottom: '12px', left: '12px',
-          background: 'rgba(0,0,0,0.75)', padding: '10px', borderRadius: '10px',
-          border: '1px solid #30363d', width: 'clamp(160px, 35vw, 230px)', backdropFilter: 'blur(8px)'
+  return (
+    <div className="sun-tracker-activity" style={{ display: 'flex', flexDirection: 'column', color: 'white' }}>
+
+      {/* ═══ SMALL INSTRUCTION CARD (above activity) ═══ */}
+      {showStartOverlay && (
+        <div className="sun-tracker-overlay-card" style={{
+          margin: '12px', padding: '14px',
+          background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+          border: '1px solid #FFB800', borderRadius: '12px',
+          display: 'flex', flexDirection: 'column', gap: '10px'
         }}>
-          <div 
-            onClick={() => setShowAngleInfo(!showAngleInfo)}
-            style={{ 
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              cursor: 'pointer', userSelect: 'none'
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <img src="/images/solar-man.png" alt="Solar Man"
+              style={{ width: '44px', height: '44px', borderRadius: '50%', border: '2px solid #FFB800', background: '#FFB800', objectFit: 'cover', flexShrink: 0 }} />
+            <div style={{ fontSize: '13px', color: '#e2e8f0', lineHeight: '1.5' }}>
+              <strong style={{ color: '#FFB800' }}>Solar Man:</strong> Align the panel to face the sun!
+              Adjust Tilt & Pan sliders to hit{' '}
+              <strong style={{ color: '#4CAF50' }}>{'\u2265'}80% efficiency</strong>.
+            </div>
+          </div>
+          <button
+            onClick={() => setShowStartOverlay(false)}
+            style={{
+              padding: '10px 20px', background: '#FFB800', border: 'none', borderRadius: '8px',
+              color: '#000', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', alignSelf: 'flex-start'
             }}
           >
-            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#FFB800' }}>📐 Panel Angle</div>
-            <span style={{ fontSize: '10px', color: '#8b949e' }}>{showAngleInfo ? '▼ Hide' : '▶ Learn More'}</span>
-          </div>
-
-          {/* Current angle readout */}
-          <div style={{ 
-            display: 'flex', gap: '12px', marginTop: '10px', 
-            background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '8px 10px'
-          }}>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ fontSize: '9px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tilt</div>
-              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#4CAF50' }}>{tiltDeg}°</div>
-            </div>
-            <div style={{ width: '1px', background: '#30363d' }} />
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ fontSize: '9px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Azimuth</div>
-              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#58a6ff' }}>{panDeg > 0 ? `+${panDeg}` : panDeg}°</div>
-            </div>
-          </div>
-
-          {/* Expandable angle education section */}
-          {showAngleInfo && (
-            <div style={{ 
-              marginTop: '12px', fontSize: '11px', lineHeight: '1.5', color: '#c9d1d9',
-              animation: 'fadeIn 0.3s ease'
-            }}>
-              <div style={{ 
-                background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)',
-                borderRadius: '8px', padding: '10px', marginBottom: '8px'
-              }}>
-                <div style={{ fontWeight: 'bold', color: '#FFB800', marginBottom: '4px', fontSize: '11px' }}>📏 How Angles Are Measured</div>
-                <p style={{ margin: '0 0 6px 0' }}>
-                  <strong style={{ color: '#4CAF50' }}>Tilt angle</strong> (elevation): Measured from the <em>horizontal surface</em> (the ground). 
-                  0° = panel lies flat facing up. 90° = panel is vertical.
-                </p>
-                <p style={{ margin: '0' }}>
-                  <strong style={{ color: '#58a6ff' }}>Azimuth</strong> (pan): Measured from <em>true south</em> (in the northern hemisphere). 
-                  0° = facing south. Negative = east. Positive = west.
-                </p>
-              </div>
-
-              <div style={{ 
-                background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.2)',
-                borderRadius: '8px', padding: '10px'
-              }}>
-                <div style={{ fontWeight: 'bold', color: '#4CAF50', marginBottom: '4px', fontSize: '11px' }}>💡 Pro Tip</div>
-                <p style={{ margin: 0 }}>
-                  For India (~28°N latitude), the <strong>ideal tilt</strong> is approximately <strong style={{ color: '#FFB800' }}>28°</strong> facing due south. 
-                  Adjust seasonally: steeper in winter (tilt + 15°), flatter in summer (tilt − 15°).
-                </p>
-              </div>
-            </div>
-          )}
+            {'\ud83d\ude80'} Start Simulation
+          </button>
         </div>
-      </div>
-
-      {/* ═══ START OVERLAY ═══ */}
-      {showStartOverlay && (
-        <SolarManOverlay title="Welcome to the Sun Tracker!" onClose={() => setShowStartOverlay(false)} closeLabel="🚀 Start Simulation">
-          <div style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.3)', borderRadius: '12px', padding: '14px', marginBottom: '16px' }}>
-            <div style={{ fontWeight: 'bold', color: '#FFB800', marginBottom: '6px', fontSize: '13px' }}>📋 PROBLEM STATEMENT</div>
-            <p style={{ margin: 0 }}>
-              A house has a solar panel on its roof. Your mission is to <strong style={{ color: '#FFB800' }}>align the panel</strong> so that it faces the sun at different times of day and achieve <strong style={{ color: '#4CAF50' }}>≥80% energy efficiency</strong>.
-            </p>
-          </div>
-          <div style={{ fontSize: '13px' }}>
-            <div style={{ fontWeight: 'bold', color: '#FFB800', marginBottom: '8px' }}>🎮 HOW TO PLAY:</div>
-            <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <li>Use the <strong>Time slider</strong> to move the sun across the sky</li>
-              <li>Adjust <strong>Panel Tilt</strong> (up/down angle from horizontal) and <strong>Panel Pan</strong> (left/right azimuth)</li>
-              <li>Watch the <strong>Energy Output</strong> meter — aim for green!</li>
-              <li>Check the <strong>📐 Angle Info</strong> panel to learn how solar angles work</li>
-              <li>Once you hit ≥80%, a quick quiz will test your knowledge!</li>
-            </ul>
-          </div>
-
-          {/* Angle education teaser */}
-          <div style={{ 
-            marginTop: '16px', background: 'rgba(76,175,80,0.1)', 
-            border: '1px solid rgba(76,175,80,0.3)', borderRadius: '12px', padding: '12px' 
-          }}>
-            <div style={{ fontWeight: 'bold', color: '#4CAF50', marginBottom: '4px', fontSize: '12px' }}>📐 ABOUT SOLAR PANEL ANGLES</div>
-            <p style={{ margin: 0, fontSize: '12px' }}>
-              Solar panels perform best when sunlight hits them at a <strong>90° perpendicular angle</strong>. 
-              The <strong style={{ color: '#4CAF50' }}>tilt</strong> (how far the panel tilts from horizontal) and 
-              <strong style={{ color: '#58a6ff' }}> azimuth</strong> (compass direction it faces) together determine energy output. 
-              In India, panels are typically tilted at <strong style={{ color: '#FFB800' }}>~28°</strong> facing south.
-            </p>
-          </div>
-        </SolarManOverlay>
       )}
 
-      {/* ═══ QUIZ OVERLAY ═══ */}
+      {/* ═══ QUIZ CARD (above activity) ═══ */}
       {showQuiz && (
-        <SolarManOverlay title={`Quiz — Question ${quizIdx + 1}/${QUIZ_QUESTIONS.length}`}>
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-            <p style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#fff' }}>{currentQ.question}</p>
+        <div className="sun-tracker-overlay-card" style={{
+          margin: '12px', padding: '14px',
+          background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+          border: '1px solid #4CAF50', borderRadius: '12px',
+          display: 'flex', flexDirection: 'column', gap: '10px'
+        }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <img src="/images/solar-man.png" alt="Solar Man"
+              style={{ width: '44px', height: '44px', borderRadius: '50%', border: '2px solid #4CAF50', background: '#4CAF50', objectFit: 'cover', flexShrink: 0 }} />
+            <div>
+              <div style={{ color: '#4CAF50', fontWeight: 'bold', fontSize: '12px' }}>
+                Quiz {'\u2014'} Question {quizIdx + 1}/{QUIZ_QUESTIONS.length}
+              </div>
+              <div style={{ fontSize: '14px', color: '#fff', fontWeight: 'bold', marginTop: '4px' }}>
+                {currentQ.question}
+              </div>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {currentQ.options.map((opt, i) => {
               let bg = 'rgba(255,255,255,0.06)';
-              let border = 'rgba(255,255,255,0.1)';
-              let color = '#e2e8f0';
+              let bdr = 'rgba(255,255,255,0.1)';
+              let clr = '#e2e8f0';
               if (isAnswered) {
-                if (i === currentQ.correct) { bg = 'rgba(76,175,80,0.2)'; border = '#4CAF50'; color = '#4CAF50'; }
-                else if (i === quizAnswers[quizIdx] && !isCorrect) { bg = 'rgba(244,67,54,0.2)'; border = '#f44336'; color = '#f44336'; }
+                if (i === currentQ.correct) { bg = 'rgba(76,175,80,0.2)'; bdr = '#4CAF50'; clr = '#4CAF50'; }
+                else if (i === quizAnswers[quizIdx] && !isCorrect) { bg = 'rgba(244,67,54,0.2)'; bdr = '#f44336'; clr = '#f44336'; }
               }
               return (
                 <button key={i} onClick={() => handleQuizAnswer(i)} disabled={isAnswered}
                   style={{
-                    padding: '12px 16px', background: bg, border: `2px solid ${border}`,
-                    borderRadius: '10px', color, fontSize: '13px', fontWeight: '600',
+                    padding: '10px 12px', background: bg, border: `2px solid ${bdr}`,
+                    borderRadius: '8px', color: clr, fontSize: '13px', fontWeight: '600',
                     cursor: isAnswered ? 'default' : 'pointer', textAlign: 'left',
-                    transition: 'all 0.2s', opacity: isAnswered && i !== currentQ.correct && i !== quizAnswers[quizIdx] ? 0.4 : 1
+                    transition: 'all 0.2s',
+                    opacity: isAnswered && i !== currentQ.correct && i !== quizAnswers[quizIdx] ? 0.4 : 1
                   }}>
-                  <span style={{ marginRight: '8px', fontWeight: 'bold' }}>{String.fromCharCode(65 + i)}.</span> {opt}
-                  {isAnswered && i === currentQ.correct && ' ✓'}
-                  {isAnswered && i === quizAnswers[quizIdx] && !isCorrect && i !== currentQ.correct && ' ✗'}
+                  <span style={{ marginRight: '8px', fontWeight: 'bold' }}>{String.fromCharCode(65 + i)}.</span>{opt}
+                  {isAnswered && i === currentQ.correct && ' \u2713'}
+                  {isAnswered && i === quizAnswers[quizIdx] && !isCorrect && i !== currentQ.correct && ' \u2717'}
                 </button>
               );
             })}
           </div>
 
           {isAnswered && (
-            <div style={{
-              padding: '12px', borderRadius: '10px', marginBottom: '12px',
-              background: isCorrect ? 'rgba(76,175,80,0.15)' : 'rgba(244,67,54,0.15)',
-              border: `1px solid ${isCorrect ? '#4CAF50' : '#f44336'}`,
-              fontSize: '13px'
-            }}>
-              <strong>{isCorrect ? '✅ Correct!' : '❌ Not quite.'}</strong> {currentQ.explanation}
+            <div>
+              <div style={{
+                background: isCorrect ? 'rgba(76,175,80,0.15)' : 'rgba(244,67,54,0.15)',
+                padding: '10px', borderRadius: '8px', marginBottom: '10px',
+                borderLeft: `4px solid ${isCorrect ? '#4CAF50' : '#f44336'}`,
+                fontSize: '13px', lineHeight: '1.5'
+              }}>
+                <strong style={{ color: isCorrect ? '#4CAF50' : '#f44336' }}>
+                  {isCorrect ? 'Correct!' : 'Incorrect.'}
+                </strong>{' '}{currentQ.explanation}
+              </div>
+              <button onClick={handleQuizNext} style={{
+                padding: '10px 16px', background: '#4CAF50', border: 'none', borderRadius: '8px',
+                color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px'
+              }}>
+                {quizIdx < QUIZ_QUESTIONS.length - 1 ? 'Next Question \u27a1' : 'Finish Quiz \ud83d\udc4d'}
+              </button>
             </div>
           )}
-
-          {isAnswered && (
-            <button onClick={handleQuizNext} style={{
-              display: 'block', width: '100%', padding: '14px',
-              border: 'none', borderRadius: '12px',
-              background: 'linear-gradient(135deg, #FFB800 0%, #FF8A00 100%)',
-              color: '#000', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer',
-              boxShadow: '0 4px 15px rgba(255,184,0,0.3)',
-            }}>
-              {quizIdx < QUIZ_QUESTIONS.length - 1 ? 'Next Question →' : 'See Results 🎉'}
-            </button>
-          )}
-        </SolarManOverlay>
+        </div>
       )}
 
-      {/* ═══ CONGRATULATIONS OVERLAY ═══ */}
+      {/* ═══ CONGRATS CARD (above activity) ═══ */}
       {showCongrats && (
-        <SolarManOverlay title="Congratulations! 🎉" onClose={() => setShowCongrats(false)} closeLabel="🔙 Back to Simulation">
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '10px' }}>🏆</div>
-            <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#FFB800', marginBottom: '6px' }}>
-              Mission Complete!
-            </div>
-            <div style={{ fontSize: '14px', color: '#8b949e' }}>
-              You aligned the panel to ≥80% efficiency and answered {quizScore}/{QUIZ_QUESTIONS.length} questions correctly!
+        <div className="sun-tracker-overlay-card" style={{
+          margin: '12px', padding: '14px',
+          background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+          border: '1px solid #FFB800', borderRadius: '12px',
+          display: 'flex', flexDirection: 'column', gap: '10px'
+        }}>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <img src="/images/solar-man.png" alt="Solar Man"
+              style={{ width: '44px', height: '44px', borderRadius: '50%', border: '2px solid #FFB800', background: '#FFB800', objectFit: 'cover', flexShrink: 0 }} />
+            <div style={{ fontSize: '13px', color: '#e2e8f0', lineHeight: '1.5' }}>
+              <strong style={{ color: '#4CAF50' }}>Amazing work!</strong>{' '}
+              Peak efficiency: <strong style={{ color: '#FFB800' }}>{peakEfficiency.toFixed(0)}%</strong>.
+              Quiz: <strong>{quizScore}/{QUIZ_QUESTIONS.length}</strong> correct.
             </div>
           </div>
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(76,175,80,0.2), rgba(76,175,80,0.05))',
-            border: '1px solid rgba(76,175,80,0.3)', borderRadius: '12px',
-            padding: '16px', textAlign: 'center'
+          <button onClick={() => setShowCongrats(false)} style={{
+            padding: '10px 16px', background: '#30363d', border: 'none', borderRadius: '8px',
+            color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '13px', alignSelf: 'flex-start'
           }}>
-            <div style={{ fontSize: '14px', color: '#4CAF50', fontWeight: 'bold', marginBottom: '4px' }}>
-              ⚡ Peak Efficiency Achieved: {peakEfficiency.toFixed(0)}%
-            </div>
-            <div style={{ fontSize: '12px', color: '#8b949e' }}>
-              Quiz Score: {quizScore}/{QUIZ_QUESTIONS.length}
-            </div>
-          </div>
-        </SolarManOverlay>
+            Back to Sandbox {'\u27a1'}
+          </button>
+        </div>
       )}
 
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes popIn {
-          0% { transform: scale(0.8) translateY(20px); opacity: 0; }
-          100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-      `}</style>
+      {/* ═══ ACTUAL ACTIVITY (dimmed when card is showing) ═══ */}
+      <div style={{
+        display: 'flex', flexDirection: 'column',
+        opacity: isActivityBlocked ? 0.2 : 1,
+        pointerEvents: isActivityBlocked ? 'none' : 'auto',
+        transition: 'opacity 0.3s ease'
+      }}>
+        {/* Controls Header */}
+        <div style={{ padding: '12px 14px', background: 'rgba(0,0,0,0.8)', borderBottom: '2px solid #333', flexShrink: 0 }}>
+          <h3 style={{ margin: '0 0 8px 0', color: '#FFB800', fontSize: 'clamp(14px, 3.5vw, 18px)' }}>
+            {'\u2600\ufe0f'} Sun Tracker Sandbox
+          </h3>
+          <p style={{ margin: '0 0 12px 0', fontSize: 'clamp(11px, 2.5vw, 14px)', color: '#ccc' }}>
+            Adjust the time of day and align your solar panel to maximize energy production!
+          </p>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 160px', minWidth: '0' }}>
+              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
+                <span>Time of Day: {Math.floor(timeOfDay)}:00</span>
+              </label>
+              <input
+                type="range" min="6" max="18" step="0.5"
+                value={timeOfDay} onChange={(e) => setTimeOfDay(parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div style={{ flex: '1 1 160px', minWidth: '0' }}>
+              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
+                <span>Panel Tilt (Up/Down): <strong style={{ color: '#4CAF50' }}>{tiltDeg}{'\u00b0'}</strong></span>
+                <span style={{ color: '#8b949e', fontSize: '10px' }}>0{'\u00b0'} = flat, 90{'\u00b0'} = vertical</span>
+              </label>
+              <input
+                type="range" min="0" max={Math.PI / 2} step="0.01"
+                value={panelTilt} onChange={(e) => setPanelTilt(parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div style={{ flex: '1 1 160px', minWidth: '0' }}>
+              <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '5px' }}>
+                <span>Panel Pan (Left/Right): <strong style={{ color: '#58a6ff' }}>{panDeg > 0 ? `+${panDeg}` : panDeg}{'\u00b0'}</strong></span>
+                <span style={{ color: '#8b949e', fontSize: '10px' }}>Azimuth</span>
+              </label>
+              <input
+                type="range" min={-Math.PI/2} max={Math.PI/2} step="0.01"
+                value={panelPan} onChange={(e) => setPanelPan(parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 3D Canvas - fixed height */}
+        <div style={{ height: '350px', flexShrink: 0 }}>
+          <Canvas shadows camera={{ position: [8, 5, 10], fov: 45 }} style={{ width: '100%', height: '100%' }}>
+            <color attach="background" args={['#87CEEB']} />
+            <SunTrackerScene timeOfDay={timeOfDay} panelTilt={panelTilt} panelPan={panelPan} setEfficiency={setEfficiency} />
+          </Canvas>
+        </div>
+
+        {/* HUD Row (static, below canvas) */}
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', gap: '12px', padding: '14px',
+          background: '#0d1117', borderTop: '2px solid #30363d'
+        }}>
+          {/* Efficiency Meter */}
+          <div style={{
+            flex: '1 1 180px', minWidth: '0',
+            background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '10px',
+            border: '1px solid #444'
+          }}>
+            <div style={{ fontSize: '14px', marginBottom: '8px', fontWeight: 'bold' }}>Energy Output</div>
+            <div style={{ height: '20px', background: '#222', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%',
+                width: `${Math.min(100, efficiency)}%`,
+                background: efficiency > 80 ? '#4CAF50' : efficiency > 40 ? '#FFEB3B' : '#F44336',
+                transition: 'width 0.2s, background 0.2s'
+              }} />
+            </div>
+            <div style={{ textAlign: 'right', marginTop: '5px', fontSize: '18px', fontWeight: 'bold', color: efficiency > 80 ? '#4CAF50' : 'white' }}>
+              {efficiency.toFixed(0)}%
+            </div>
+            <div style={{ fontSize: '10px', color: '#8b949e', marginTop: '4px' }}>
+              Peak: {peakEfficiency.toFixed(0)}%
+            </div>
+          </div>
+
+          {/* Angle Info */}
+          <div style={{
+            flex: '1 1 220px', minWidth: '0',
+            background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '10px',
+            border: '1px solid #30363d'
+          }}>
+            <div
+              onClick={() => setShowAngleInfo(!showAngleInfo)}
+              style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                cursor: 'pointer', userSelect: 'none'
+              }}
+            >
+              <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#FFB800' }}>{'\ud83d\udcd0'} Panel Angle</div>
+              <span style={{ fontSize: '10px', color: '#8b949e' }}>{showAngleInfo ? '\u25bc Hide' : '\u25b6 Learn More'}</span>
+            </div>
+
+            <div style={{
+              display: 'flex', gap: '12px', marginTop: '10px',
+              background: 'rgba(0,0,0,0.4)', borderRadius: '8px', padding: '8px 10px'
+            }}>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <div style={{ fontSize: '9px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tilt</div>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#4CAF50' }}>{tiltDeg}{'\u00b0'}</div>
+              </div>
+              <div style={{ width: '1px', background: '#30363d' }} />
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <div style={{ fontSize: '9px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Azimuth</div>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#58a6ff' }}>{panDeg > 0 ? `+${panDeg}` : panDeg}{'\u00b0'}</div>
+              </div>
+            </div>
+
+            {showAngleInfo && (
+              <div style={{ marginTop: '12px', fontSize: '11px', lineHeight: '1.5', color: '#c9d1d9' }}>
+                <div style={{
+                  background: 'rgba(255,184,0,0.08)', border: '1px solid rgba(255,184,0,0.2)',
+                  borderRadius: '8px', padding: '10px', marginBottom: '8px'
+                }}>
+                  <div style={{ fontWeight: 'bold', color: '#FFB800', marginBottom: '4px', fontSize: '11px' }}>{'\ud83d\udccf'} How Angles Are Measured</div>
+                  <p style={{ margin: '0 0 6px 0' }}>
+                    <strong style={{ color: '#4CAF50' }}>Tilt angle</strong> (elevation): Measured from the <em>horizontal surface</em>.
+                    0{'\u00b0'} = flat, 90{'\u00b0'} = vertical.
+                  </p>
+                  <p style={{ margin: '0' }}>
+                    <strong style={{ color: '#58a6ff' }}>Azimuth</strong> (pan): Measured from <em>true south</em>.
+                    0{'\u00b0'} = south. Negative = east. Positive = west.
+                  </p>
+                </div>
+
+                <div style={{
+                  background: 'rgba(76,175,80,0.08)', border: '1px solid rgba(76,175,80,0.2)',
+                  borderRadius: '8px', padding: '10px'
+                }}>
+                  <div style={{ fontWeight: 'bold', color: '#4CAF50', marginBottom: '4px', fontSize: '11px' }}>{'\ud83d\udca1'} Pro Tip</div>
+                  <p style={{ margin: 0 }}>
+                    For India (~28{'\u00b0'}N), ideal tilt is ~28{'\u00b0'} facing south.
+                    Steeper in winter (+15{'\u00b0'}), flatter in summer (-15{'\u00b0'}).
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

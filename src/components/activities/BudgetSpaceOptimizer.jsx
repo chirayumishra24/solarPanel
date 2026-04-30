@@ -97,9 +97,10 @@ function SolarManSuccessPopup({ power, cost, mono, poly, onClose }) {
       <div style={{
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
         borderRadius: '20px', border: '3px solid #4CAF50',
-        maxWidth: '460px', width: '100%', padding: '28px',
-        boxShadow: '0 0 60px rgba(76,175,80,0.25)',
-        animation: 'popInSM 0.5s cubic-bezier(0.175,0.885,0.32,1.275)'
+        maxWidth: '100%', width: '100%', padding: '24px',
+        boxShadow: '0 5px 30px rgba(0,0,0,0.4)',
+        animation: 'popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275)',
+        display: 'flex', flexDirection: 'column'
       }}>
         {/* Solar Man Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
@@ -199,7 +200,7 @@ export default function BudgetSpaceOptimizer() {
   const spacePct = Math.min(100, (currentSpace / MAX_SPACE) * 100);
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', color: 'white', fontFamily: 'sans-serif', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#0d1117', color: 'white', fontFamily: 'sans-serif', position: 'relative' }}>
       
       {/* Header with Activity Aim */}
       <div style={{ padding: '12px 16px', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', borderBottom: '2px solid #30363d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, flexWrap: 'wrap', gap: '8px' }}>
@@ -229,12 +230,12 @@ export default function BudgetSpaceOptimizer() {
         </div>
       </div>
 
-      {/* Main area: 3D left + controls right — stacks on mobile */}
-      <div style={{ flex: 1, display: 'flex', minHeight: 0, flexWrap: 'wrap' }}>
+      {/* Main area: 3D top + controls bottom — stacks natively */}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         
         {/* 3D Viewport */}
-        <div style={{ flex: '1 1 300px', position: 'relative', minWidth: 0, minHeight: '250px' }}>
-          <Canvas camera={{ position: [0, 7, 9], fov: 40 }} style={{ background: '#0d1117' }}>
+        <div style={{ position: 'relative', height: '350px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+          <Canvas camera={{ position: [0, 7, 9], fov: 40 }} style={{ flex: 1, background: '#0d1117' }}>
             <ambientLight intensity={0.4} />
             <directionalLight position={[8, 10, 5]} intensity={1.2} castShadow />
             <RoofScene monoCount={monoCount} polyCount={polyCount} />

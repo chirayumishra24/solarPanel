@@ -697,6 +697,13 @@ export default function SubsidyCalculator() {
   const [checkedRules, setCheckedRules] = useState([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  React.useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const getCentralSubsidy = (kw) => {
     if (kw <= 0) return 0;
@@ -834,6 +841,7 @@ export default function SubsidyCalculator() {
           backdropFilter: 'blur(12px)',
           borderTop: '2px solid #30363d',
           display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
           flexWrap: 'wrap',
           minHeight: 0,
           flexShrink: 0,
@@ -847,7 +855,6 @@ export default function SubsidyCalculator() {
             flexDirection: 'column', 
             gap: '10px', 
             overflowY: 'auto',
-            maxHeight: isFullscreen ? '350px' : '280px',
             minWidth: 0,
           }}>
             
@@ -919,17 +926,16 @@ export default function SubsidyCalculator() {
 
           {/* Right: Results */}
           <div style={{ 
-            flex: '0 0 auto',
+            flex: '1 1 240px',
             width: '100%',
-            maxWidth: '260px',
             background: '#161b22', 
-            borderLeft: '2px solid #30363d', 
+            borderLeft: isMobile ? 'none' : '2px solid #30363d',
+            borderTop: isMobile ? '2px solid #30363d' : 'none',
             padding: '12px', 
             display: 'flex', 
             flexDirection: 'column', 
             gap: '8px', 
             overflowY: 'auto',
-            maxHeight: isFullscreen ? '350px' : '280px',
           }}>
             <div style={{ fontSize: '11px', color: '#8b949e', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>Breakdown</div>
 
